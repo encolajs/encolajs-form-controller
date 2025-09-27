@@ -1,16 +1,16 @@
-import type { FormValidator } from '../types'
+import type { FormValidator, DataSource } from '../types'
 
 /**
  * No-operation validator that considers all fields and forms to be valid
  * Used as the default validator when no validation is needed
  */
 export class NoopValidator implements FormValidator {
-  async validateField(_path: string, _data: Record<string, unknown>): Promise<string[]> {
+  async validateField(_path: string, _dataSource: DataSource): Promise<string[]> {
     // Always return no errors (valid)
     return []
   }
 
-  async validate(_data: Record<string, unknown>): Promise<Record<string, string[]>> {
+  async validate(_dataSource: DataSource): Promise<Record<string, string[]>> {
     // Always return no errors (valid form)
     return {}
   }

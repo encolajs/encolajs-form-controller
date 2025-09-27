@@ -59,10 +59,10 @@ export interface DataSource {
  */
 export interface FormValidator {
   /** Validate a specific field */
-  validateField(path: string, data: Record<string, unknown>): Promise<string[]>
+  validateField(path: string, dataSource: DataSource): Promise<string[]>
 
   /** Validate entire form */
-  validate(data: Record<string, unknown>): Promise<Record<string, string[]>>
+  validate(dataSource: DataSource): Promise<Record<string, string[]>>
 
   /** Get current field errors */
   getFieldErrors(path: string): string[]

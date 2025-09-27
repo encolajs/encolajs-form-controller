@@ -86,8 +86,8 @@ class FieldController implements IFieldController {
 
     try {
       const validator = this.formController.getValidator()
-      const data = this.formController.getValues()
-      const errors = await validator.validateField(this.path, data)
+      const dataSource = this.formController.getDataSource()
+      const errors = await validator.validateField(this.path, dataSource)
 
       // Update form-level errors
       this.formController.setFieldErrors(this.path, errors)
@@ -171,8 +171,7 @@ export class FormController implements IFormController {
     this.isValidating(true)
 
     try {
-      const data = this.getValues()
-      const errors = await this.validator.validate(data)
+      const errors = await this.validator.validate(this.dataSource)
 
       this.errorsSignal(errors)
 
@@ -330,56 +329,4 @@ export class FormController implements IFormController {
     this.dataSignal(this.dataSource.all())
   }
 
-  /**
-   * Update the validator with new rules
-   */
-  updateValidator(validator: FormValidator): void {
-    this.validator = validator
-  }
-
-  /**
-   * Get form statistics
-   */
-  getStats(): {
-    fieldCount: number
-    dirtyFieldCount: number
-    touchedFieldCount: number
-    invalidFieldCount: number
-  } {
-    const fields = Array.from(this.fieldControllers.values())
-    const errors = this.getErrors()
-
-    return {
-      fieldCount: fields.length,
-      dirtyFieldCount: fields.filter(f => f.isDirty()).length,
-      touchedFieldCount: fields.filter(f => f.isTouched()).length,
-      invalidFieldCount: Object.keys(errors).length
-    }
-  }
-
-  /**
-   * Check if form has any changes
-   */
-  hasChanges(): boolean {
-    return this.isDirty()
-  }
-
-  /**
-   * Get a snapshot of current form state
-   */
-  getSnapshot(): {
-    data: Record<string, unknown>
-    errors: Record<string, string[]>
-    isDirty: boolean
-    isTouched: boolean
-    isValid: boolean
-  } {
-    return {
-      data: this.getValues(),
-      errors: this.getErrors(),
-      isDirty: this.isDirty(),
-      isTouched: this.isTouched(),
-      isValid: this.isValid()
-    }
-  }
 }

@@ -1,27 +1,29 @@
-import type { FormValidator } from '../../src/types'
+import type { FormValidator, DataSource } from '../../src/types'
 
 export class MockFormValidator implements FormValidator {
   private fieldErrors: Record<string, string[]> = {}
   private formErrors: Record<string, string[]> = {}
   private asyncDelays: Record<string, number> = {}
 
-  async validateField(path: string, data: Record<string, unknown>): Promise<string[]> {
+  async validateField(path: string, dataSource: DataSource): Promise<string[]> {
     const delay = this.asyncDelays[path] || 0
 
     if (delay > 0) {
       await new Promise(resolve => setTimeout(resolve, delay))
     }
 
+    // We can access the data if needed: const data = dataSource.all()
     return this.fieldErrors[path] || []
   }
 
-  async validate(data: Record<string, unknown>): Promise<Record<string, string[]>> {
+  async validate(dataSource: DataSource): Promise<Record<string, string[]>> {
     const maxDelay = Math.max(...Object.values(this.asyncDelays))
 
     if (maxDelay > 0) {
       await new Promise(resolve => setTimeout(resolve, maxDelay))
     }
 
+    // We can access the data if needed: const data = dataSource.all()
     return { ...this.formErrors }
   }
 

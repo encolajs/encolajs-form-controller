@@ -51,7 +51,7 @@ describe('FormController', () => {
   })
 
   describe('field method', () => {
-    it('should return FieldController for valid path', () => {
+    it('should return FieldState for valid path', () => {
       const nameField = formController.field('name')
 
       expect(nameField.value()).toBe('John')
@@ -62,7 +62,7 @@ describe('FormController', () => {
       expect(nameField.errors()).toEqual([])
     })
 
-    it('should return same FieldController instance for same path', () => {
+    it('should return same FieldState instance for same path', () => {
       const field1 = formController.field('name')
       const field2 = formController.field('name')
 
@@ -86,10 +86,10 @@ describe('FormController', () => {
   })
 
   describe('field operations', () => {
-    it('should set field values through FieldController', async () => {
+    it('should set field values through FormController', async () => {
       const nameField = formController.field('name')
 
-      await nameField.setValue('Jane')
+      await formController.setValue('name', 'Jane')
 
       expect(nameField.value()).toBe('Jane')
       expect(dataSource.get('name')).toBe('Jane')
@@ -102,7 +102,7 @@ describe('FormController', () => {
       validator.mockFieldValidation('name', ['Name is required'])
       const nameField = formController.field('name')
 
-      await nameField.setValue('')
+      await formController.setValue('name', '')
 
       expect(nameField.errors()).toEqual(['Name is required'])
       expect(nameField.isValid()).toBe(false)
@@ -113,8 +113,8 @@ describe('FormController', () => {
       const nameField = formController.field('name')
 
       // Make field dirty and touched
-      nameField.setValue('Jane')
-      nameField.reset()
+      formController.setValue('name', 'Jane')
+      formController.reset()
 
       expect(nameField.isDirty()).toBe(false)
       expect(nameField.isTouched()).toBe(false)
@@ -123,7 +123,7 @@ describe('FormController', () => {
     it('should set field errors directly', () => {
       const nameField = formController.field('name')
 
-      nameField.setErrors(['Custom error'])
+      formController.setErrors({ 'name': ['Custom error'] })
 
       expect(nameField.errors()).toEqual(['Custom error'])
       expect(nameField.isValid()).toBe(false)
@@ -132,8 +132,8 @@ describe('FormController', () => {
     it('should clear field errors when empty array is set', () => {
       const nameField = formController.field('name')
 
-      nameField.setErrors(['Error'])
-      nameField.setErrors([])
+      formController.setErrors({ 'name': ['Error'] })
+      formController.setErrors({ 'name': [] })
 
       expect(nameField.errors()).toEqual([])
       expect(nameField.isValid()).toBe(true)
@@ -205,9 +205,9 @@ describe('FormController', () => {
 
     it('should reset form to initial state', async () => {
       // Make changes
-      await formController.field('name').setValue('Jane')
-      await formController.field('email').setValue('jane@example.com')
-      await formController.field('newField').setValue('test')
+      await formController.setValue('name', 'Jane')
+      await formController.setValue('email', 'jane@example.com')
+      await formController.setValue('newField', 'test')
 
       // Reset
       formController.reset()
@@ -275,7 +275,7 @@ describe('FormController', () => {
     it('should update isDirty when fields change', async () => {
       expect(formController.isDirty()).toBe(false)
 
-      await formController.field('name').setValue('Jane')
+      await formController.setValue('name', 'Jane')
 
       expect(formController.isDirty()).toBe(true)
     })
@@ -283,8 +283,7 @@ describe('FormController', () => {
     it('should update isTouched when fields are touched', async () => {
       expect(formController.isTouched()).toBe(false)
 
-      const nameField = formController.field('name')
-      await nameField.setValue('Jane')
+      await formController.setValue('name', 'Jane')
 
       expect(formController.isTouched()).toBe(true)
     })
@@ -292,7 +291,7 @@ describe('FormController', () => {
     it('should update isValid when validation state changes', () => {
       expect(formController.isValid()).toBe(true)
 
-      formController.field('name').setErrors(['Error'])
+      formController.setErrors({ 'name': ['Error'] })
 
       expect(formController.isValid()).toBe(false)
     })
@@ -308,11 +307,11 @@ describe('FormController', () => {
       expect(validityStates[validityStates.length - 1]).toBe(true)
 
       // Add error - should become invalid
-      formController.field('name').setErrors(['Error'])
+      formController.setErrors({ 'name': ['Error'] })
       expect(validityStates[validityStates.length - 1]).toBe(false)
 
       // Clear error - should become valid again
-      formController.field('name').setErrors([])
+      formController.setErrors({ 'name': [] })
       expect(validityStates[validityStates.length - 1]).toBe(true)
     })
   })
@@ -326,7 +325,7 @@ describe('FormController', () => {
         validatingStates.push(nameField.isValidating())
       })
 
-      const validatePromise = nameField.validate()
+      const validatePromise = formController.validateField('name')
       expect(nameField.isValidating()).toBe(true)
 
       await validatePromise
@@ -337,7 +336,7 @@ describe('FormController', () => {
       const field1 = formController.field('name')
       const field2 = formController.field('name')
 
-      await field1.setValue('Jane')
+      await formController.setValue('name', 'Jane')
 
       expect(field2.value()).toBe('Jane')
       expect(field2.isDirty()).toBe(true)
@@ -365,9 +364,9 @@ describe('FormController', () => {
       const nameField = formController.field('name')
 
       const promises = [
-        nameField.setValue('Jane'),
-        nameField.setValue('Bob'),
-        nameField.validate(),
+        formController.setValue('name', 'Jane'),
+        formController.setValue('name', 'Bob'),
+        formController.validateField('name'),
         formController.validate()
       ]
 
@@ -390,7 +389,7 @@ describe('FormController', () => {
       validator.mockAsyncValidation('name', ['Async error'], 100)
 
       const nameField = formController.field('name')
-      const validatePromise = nameField.validate()
+      const validatePromise = formController.validateField('name')
 
       expect(nameField.isValidating()).toBe(true)
 
@@ -406,7 +405,7 @@ describe('FormController', () => {
     it('should respect setValue options', async () => {
       const nameField = formController.field('name')
 
-      await nameField.setValue('Jane', {
+      await formController.setValue('name', 'Jane', {
         validate: false,
         touch: false,
         dirty: false
@@ -421,7 +420,7 @@ describe('FormController', () => {
       validator.mockFieldValidation('name', ['Error'])
       const nameField = formController.field('name')
 
-      await nameField.setValue('', { validate: true })
+      await formController.setValue('name', '', { validate: true })
 
       expect(nameField.errors()).toEqual(['Error'])
     })

@@ -2,7 +2,7 @@ import { signal, computed } from 'alien-signals'
 import type {
   DataSource,
   FormValidator,
-  IFieldController,
+  IFieldState,
   IFormController,
   FormSetValueOptions,
   Signal,
@@ -12,105 +12,37 @@ import { PlainObjectDataSource } from '../data-sources/PlainObjectDataSource'
 import { NoopValidator } from '../validators/NoopValidator'
 
 /**
- * Field controller implementation using alien-signals
+ * Factory function to create field state objects
  */
-class FieldController implements IFieldController {
-  readonly value: ISignal<unknown>
-  readonly isDirty: Signal<boolean>
-  readonly isTouched: Signal<boolean>
-  readonly isValidating: Signal<boolean>
-  readonly isValid: ISignal<boolean>
-  readonly errors: ISignal<string[]>
+function createFieldState(formController: FormController, path: string): IFieldState {
+  // Individual field state signals
+  const isDirty = signal(false)
+  const isTouched = signal(false)
+  const isValidating = signal(false)
 
-  private formController: FormController
-  private path: string
+  // Computed value from data source
+  const value = computed(() => formController.getValue(path)) as ISignal<unknown>
 
-  constructor(formController: FormController, path: string) {
-    this.formController = formController
-    this.path = path
+  // Computed field errors from form controller
+  const errors = computed(() => {
+    const formErrors = formController.getErrors()
+    return formErrors[path] || []
+  }) as ISignal<string[]>
 
-    // Computed value from data source
-    this.value = computed(() => this.formController.getDataSource().get(this.path)) as ISignal<unknown>
+  // Computed field validity
+  const isValid = computed(() => errors().length === 0) as ISignal<boolean>
 
-    // Individual field state signals
-    this.isDirty = signal(false)
-    this.isTouched = signal(false)
-    this.isValidating = signal(false)
-
-    // Computed field errors from form controller
-    this.errors = computed(() => {
-      const formErrors = this.formController.getErrors()
-      return formErrors[this.path] || []
-    }) as ISignal<string[]>
-
-    // Computed field validity
-    this.isValid = computed(() => this.errors().length === 0) as ISignal<boolean>
-  }
-
-  async setValue(value: unknown, options: FormSetValueOptions = {}): Promise<void> {
-    const {
-      validate = true,
-      touch = true,
-      dirty = true
-    } = options
-
-    // Update the data source
-    this.formController.getDataSource().set(this.path, value)
-
-    // Trigger data source reactivity
-    this.formController.triggerDataUpdate()
-
-    // Update field state
-    if (dirty) {
-      this.isDirty(true)
-      this.formController.setDirty(true)
-    }
-
-    if (touch) {
-      this.isTouched(true)
-      this.formController.setTouched(true)
-    }
-
-    // Validate if requested
-    if (validate) {
-      await this.validate()
-    }
-  }
-
-  getValue(): unknown {
-    return this.formController.getDataSource().get(this.path)
-  }
-
-  async validate(): Promise<boolean> {
-    this.isValidating(true)
-
-    try {
-      const validator = this.formController.getValidator()
-      const dataSource = this.formController.getDataSource()
-      const errors = await validator.validateField(this.path, dataSource)
-
-      // Update form-level errors
-      this.formController.setFieldErrors(this.path, errors)
-
-      return errors.length === 0
-    } catch (error) {
-      console.error(`[FormController] Error validating field ${this.path}:`, error)
-      return false
-    } finally {
-      this.isValidating(false)
-    }
-  }
-
-  setErrors(errors: string[]): void {
-    this.formController.setFieldErrors(this.path, errors)
-  }
-
-  reset(): void {
-    this.isDirty(false)
-    this.isTouched(false)
-    this.isValidating(false)
+  return {
+    path,
+    value,
+    isDirty,
+    isTouched,
+    isValidating,
+    errors,
+    isValid
   }
 }
+
 
 /**
  * Main FormController implementation using alien-signals for reactivity
@@ -127,7 +59,7 @@ export class FormController implements IFormController {
   private dataSource: DataSource
   private initialDataSource: DataSource
   private validator: FormValidator
-  private fieldControllers: Map<string, IFieldController> = new Map()
+  private fieldStates: Map<string, IFieldState> = new Map()
   private dataSignal: Signal<Record<string, unknown>>
   private errorsSignal: Signal<Record<string, string[]>>
 
@@ -153,14 +85,85 @@ export class FormController implements IFormController {
     }) as ISignal<boolean>
   }
 
-  field(path: string): IFieldController {
-    // Cache field controllers to maintain signal consistency
-    if (!this.fieldControllers.has(path)) {
-      const fieldController = new FieldController(this, path)
-      this.fieldControllers.set(path, fieldController)
+  field(path: string): IFieldState {
+    // Cache field states to maintain signal consistency
+    if (!this.fieldStates.has(path)) {
+      const fieldState = createFieldState(this, path)
+      this.fieldStates.set(path, fieldState)
     }
 
-    return this.fieldControllers.get(path)!
+    return this.fieldStates.get(path)!
+  }
+
+  getValue(path: string): unknown {
+    return this.dataSource.get(path)
+  }
+
+  async setValue(path: string, value: unknown, options: FormSetValueOptions = {}): Promise<void> {
+    const {
+      validate = true,
+      touch = true,
+      dirty = true
+    } = options
+
+    // Update the data source
+    this.dataSource.set(path, value)
+
+    // Trigger data source reactivity
+    this.triggerDataUpdate()
+
+    // Update form-level state
+    if (dirty) {
+      this.isDirty(true)
+    }
+
+    if (touch) {
+      this.isTouched(true)
+    }
+
+    // Update field state if field exists
+    const fieldState = this.fieldStates.get(path)
+    if (fieldState) {
+      if (dirty) {
+        fieldState.isDirty(true)
+      }
+
+      if (touch) {
+        fieldState.isTouched(true)
+      }
+    }
+
+    // Validate if requested
+    if (validate) {
+      await this.validateField(path)
+    }
+  }
+
+  async validateField(path: string): Promise<boolean> {
+    const fieldState = this.fieldStates.get(path)
+    if (fieldState) {
+      fieldState.isValidating(true)
+    }
+
+    try {
+      const errors = await this.validator.validateField(path, this.dataSource)
+
+      // Update form-level errors
+      this.setFieldErrors(path, errors)
+
+      return errors.length === 0
+    } catch (error) {
+      console.error(`[FormController] Error validating field ${path}:`, error)
+      return false
+    } finally {
+      if (fieldState) {
+        fieldState.isValidating(false)
+      }
+    }
+  }
+
+  getErrors(): Record<string, string[]> {
+    return this.errorsSignal()
   }
 
   getValues(): Record<string, unknown> {
@@ -216,16 +219,20 @@ export class FormController implements IFormController {
     this.isTouched(false)
     this.errorsSignal({})
 
-    // Reset all field controllers
-    this.fieldControllers.forEach(field => field.reset())
+    // Reset all field states
+    this.fieldStates.forEach(fieldState => {
+      fieldState.isDirty(false)
+      fieldState.isTouched(false)
+      fieldState.isValidating(false)
+    })
 
     // Trigger data update
     this.triggerDataUpdate()
   }
 
   destroy(): void {
-    // Clean up field controllers
-    this.fieldControllers.clear()
+    // Clean up field states
+    this.fieldStates.clear()
 
     // Clear any ongoing operations
     this.isSubmitting(false)
@@ -257,13 +264,26 @@ export class FormController implements IFormController {
   }
 
   setErrors(errors: Record<string, string[]>): void {
-    this.errorsSignal({ ...errors })
+    // Get current errors and merge with new ones
+    const currentErrors = this.errorsSignal()
+    const updatedErrors = { ...currentErrors }
+
+    // Update/remove errors for specified fields
+    Object.keys(errors).forEach(path => {
+      if (errors[path].length > 0) {
+        updatedErrors[path] = errors[path]
+      } else {
+        delete updatedErrors[path]
+      }
+    })
+
+    this.errorsSignal(updatedErrors)
 
     // Mark affected fields as touched
     Object.keys(errors).forEach(path => {
-      const field = this.field(path)
-      if (field instanceof FieldController) {
-        field.isTouched(true)
+      const fieldState = this.fieldStates.get(path)
+      if (fieldState) {
+        fieldState.isTouched(true)
       }
     })
 
@@ -272,26 +292,6 @@ export class FormController implements IFormController {
 
   // Internal helper methods
 
-  /**
-   * Get the data source (for field controllers)
-   */
-  getDataSource(): DataSource {
-    return this.dataSource
-  }
-
-  /**
-   * Get the validator (for field controllers)
-   */
-  getValidator(): FormValidator {
-    return this.validator
-  }
-
-  /**
-   * Get current errors state
-   */
-  getErrors(): Record<string, string[]> {
-    return this.errorsSignal()
-  }
 
   /**
    * Set errors for a specific field

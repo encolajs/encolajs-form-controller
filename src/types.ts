@@ -93,9 +93,12 @@ export interface FormValidator {
 }
 
 /**
- * Field controller interface providing reactive field state and operations
+ * Field state interface providing reactive field state without methods
  */
-export interface IFieldController {
+export interface IFieldState {
+  /** Field path */
+  readonly path: string
+
   /** Reactive field value (computed from DataSource) */
   readonly value: ISignal<unknown>
 
@@ -113,21 +116,6 @@ export interface IFieldController {
 
   /** Current field validation errors */
   readonly errors: ISignal<string[]>
-
-  /** Set field value */
-  setValue(value: unknown, options?: FormSetValueOptions): Promise<void>
-
-  /** Get field value */
-  getValue(): unknown
-
-  /** Validate this field */
-  validate(): Promise<boolean>
-
-  /** Set field errors */
-  setErrors(errors: string[]): void
-
-  /** Reset field state */
-  reset(): void
 }
 
 /**
@@ -149,8 +137,20 @@ export interface IFormController {
   /** Whether entire form is valid */
   readonly isValid: ISignal<boolean>
 
-  /** Get field controller for specific path */
-  field(path: string): IFieldController
+  /** Get field state for specific path */
+  field(path: string): IFieldState
+
+  /** Get field value by path */
+  getValue(path: string): unknown
+
+  /** Set field value by path */
+  setValue(path: string, value: unknown, options?: FormSetValueOptions): Promise<void>
+
+  /** Validate specific field */
+  validateField(path: string): Promise<boolean>
+
+  /** Get current form errors */
+  getErrors(): Record<string, string[]>
 
   /** Get all form values */
   getValues(): Record<string, unknown>

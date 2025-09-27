@@ -6,6 +6,12 @@ import {
   removeByPath,
   deepClone
 } from '../utils/pathUtils'
+import {
+  moveArrayItem,
+  removeArrayItem,
+  insertArrayItem,
+  pushArrayItem
+} from '../utils/arrayUtils'
 
 /**
  * Plain object data source implementation
@@ -32,12 +38,11 @@ export class PlainObjectDataSource implements DataSource {
 
   arrayPush(arrayPath: string, value: unknown): void {
     const array = this.get(arrayPath)
+    const resultArray = pushArrayItem(array as any[], value)
 
-    if (Array.isArray(array)) {
-      array.push(value)
-    } else {
-      // Create new array if path doesn't exist or isn't an array
-      this.set(arrayPath, [value])
+    // If a new array was created, set it at the path
+    if (!Array.isArray(array)) {
+      this.set(arrayPath, resultArray)
     }
   }
 
@@ -45,15 +50,7 @@ export class PlainObjectDataSource implements DataSource {
     const array = this.get(arrayPath)
 
     if (Array.isArray(array)) {
-      // Handle negative index
-      const normalizedIndex = Math.max(0, index)
-
-      // Handle index beyond array length (append)
-      if (normalizedIndex >= array.length) {
-        array.push(value)
-      } else {
-        array.splice(normalizedIndex, 0, value)
-      }
+      insertArrayItem(array, index, value)
     } else {
       // Create new array if path doesn't exist or isn't an array
       this.set(arrayPath, [value])
@@ -63,32 +60,17 @@ export class PlainObjectDataSource implements DataSource {
   arrayRemove(arrayPath: string, index: number): void {
     const array = this.get(arrayPath)
 
-    if (Array.isArray(array) && index >= 0 && index < array.length) {
-      array.splice(index, 1)
+    if (Array.isArray(array)) {
+      removeArrayItem(array, index)
     }
   }
 
   arrayMove(arrayPath: string, fromIndex: number, toIndex: number): void {
     const array = this.get(arrayPath)
 
-    if (!Array.isArray(array)) {
-      return
+    if (Array.isArray(array)) {
+      moveArrayItem(array, fromIndex, toIndex)
     }
-
-    // Validate indices
-    if (
-      fromIndex < 0 ||
-      fromIndex >= array.length ||
-      toIndex < 0 ||
-      toIndex >= array.length ||
-      fromIndex === toIndex
-    ) {
-      return
-    }
-
-    // Move item
-    const item = array.splice(fromIndex, 1)[0]
-    array.splice(toIndex, 0, item)
   }
 
   has(path: string): boolean {

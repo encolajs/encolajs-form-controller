@@ -17,10 +17,13 @@ export default defineConfig({
       fileName: (format) => `index.${format}.js`
     },
     rollupOptions: {
-      external: ['alien-signals'],
+      external: ['alien-signals', 'zod', 'yup', 'valibot'],
       output: {
         globals: {
-          'alien-signals': 'AlienSignals'
+          'alien-signals': 'AlienSignals',
+          'zod': 'z',
+          'yup': 'yup',
+          'valibot': 'v'
         }
       }
     },

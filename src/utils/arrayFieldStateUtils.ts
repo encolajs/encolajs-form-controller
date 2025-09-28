@@ -7,6 +7,7 @@ interface FieldStateData {
   isDirty: boolean
   isTouched: boolean
   isValidating: boolean
+  wasValidated: boolean
 }
 
 /**
@@ -53,32 +54,43 @@ export function getFieldStatesByPath(
  * Note: fieldFactory is needed because field states are path-specific objects
  * that need to be recreated at new paths when array indices change
  */
-export function insertFieldState(
+export async function insertFieldState(
   fieldStates: Map<string, IFieldState>,
   fieldFactory: (path: string) => IFieldState,
+  fieldValidator: (path: string) => Promise<boolean>,
   arrayPath: string,
   insertIndex: number
-): void {
+): Promise<void> {
   const arrayFieldStates = getFieldStatesByPath(fieldStates, arrayPath)
   if (arrayFieldStates.length === 0) return
 
   // Create a map to store field states that need to be shifted
   const stateMap = new Map<string, FieldStateData>()
+  const fieldsToRevalidate: string[] = []
 
   // Collect states from fields that will be shifted (index >= insertIndex)
   arrayFieldStates.forEach(({ index, subPath, fieldState }) => {
     if (index >= insertIndex) {
       const newPath = `${arrayPath}.${index + 1}.${subPath}`
+      const wasValidated = fieldState.wasValidated()
+
       stateMap.set(newPath, {
         isDirty: fieldState.isDirty(),
         isTouched: fieldState.isTouched(),
-        isValidating: fieldState.isValidating()
+        isValidating: fieldState.isValidating(),
+        wasValidated
       })
+
+      // If field was validated, we need to revalidate it at the new path
+      if (wasValidated) {
+        fieldsToRevalidate.push(newPath)
+      }
 
       // Reset the original field state
       fieldState.isDirty(false)
       fieldState.isTouched(false)
       fieldState.isValidating(false)
+      fieldState.wasValidated(false)
     }
   })
 
@@ -88,42 +100,56 @@ export function insertFieldState(
     newFieldState.isDirty(state.isDirty)
     newFieldState.isTouched(state.isTouched)
     newFieldState.isValidating(state.isValidating)
+    newFieldState.wasValidated(state.wasValidated)
   })
+
+  await revalidateFields(fieldsToRevalidate, fieldValidator)
 }
 
 /**
  * Shift field states when removing from an array
  * Note: fieldFactory is needed to create new field state objects at shifted paths
  */
-export function removeFieldState(
+export async function removeFieldState(
   fieldStates: Map<string, IFieldState>,
   fieldFactory: (path: string) => IFieldState,
+  fieldValidator: (path: string) => Promise<boolean>,
   arrayPath: string,
   removeIndex: number,
   arrayLength: number
-): void {
+): Promise<void> {
   const arrayFieldStates = getFieldStatesByPath(fieldStates, arrayPath)
   if (arrayFieldStates.length === 0) return
 
   // Save original states for indices that need to be preserved
   const preservedStates = new Map<string, FieldStateData>()
   const shiftedStates = new Map<string, FieldStateData>()
+  const fieldsToRevalidate: string[] = []
 
   arrayFieldStates.forEach(({ index, subPath, fieldState }) => {
     const currentPath = `${arrayPath}.${index}.${subPath}`
     const state = {
       isDirty: fieldState.isDirty(),
       isTouched: fieldState.isTouched(),
-      isValidating: fieldState.isValidating()
+      isValidating: fieldState.isValidating(),
+      wasValidated: fieldState.wasValidated()
     }
 
     if (index < removeIndex) {
       // Preserve states for indices before the removed index
       preservedStates.set(currentPath, state)
+      // Re-validate preserved fields to ensure contextual validation is current
+      if (state.wasValidated) {
+        fieldsToRevalidate.push(currentPath)
+      }
     } else if (index > removeIndex) {
       // Collect states that will shift down
       const newPath = `${arrayPath}.${index - 1}.${subPath}`
       shiftedStates.set(newPath, state)
+      // Re-validate shifted fields at their new positions
+      if (state.wasValidated) {
+        fieldsToRevalidate.push(newPath)
+      }
     }
     // index === removeIndex: these field states are deleted (not preserved)
   })
@@ -133,6 +159,7 @@ export function removeFieldState(
     fieldState.isDirty(false)
     fieldState.isTouched(false)
     fieldState.isValidating(false)
+    fieldState.wasValidated(false)
   })
 
   // Restore preserved states (indices < removeIndex)
@@ -142,6 +169,7 @@ export function removeFieldState(
       fieldState.isDirty(state.isDirty)
       fieldState.isTouched(state.isTouched)
       fieldState.isValidating(state.isValidating)
+      fieldState.wasValidated(state.wasValidated)
     }
   })
 
@@ -151,29 +179,34 @@ export function removeFieldState(
     newFieldState.isDirty(state.isDirty)
     newFieldState.isTouched(state.isTouched)
     newFieldState.isValidating(state.isValidating)
+    newFieldState.wasValidated(state.wasValidated)
   })
 
   // Clean up orphaned field states beyond the new array length
   cleanupOrphanedFieldStates(fieldStates, arrayPath, arrayLength)
+
+  await revalidateFields(fieldsToRevalidate, fieldValidator)
 }
 
 /**
  * Swap field states when moving items in an array
  * Note: fieldFactory is needed to create new field state objects at moved positions
  */
-export function swapFieldStates(
+export async function swapFieldStates(
   fieldStates: Map<string, IFieldState>,
   fieldFactory: (path: string) => IFieldState,
+  fieldValidator: (path: string) => Promise<boolean>,
   arrayPath: string,
   fromIndex: number,
   toIndex: number,
   arrayLength: number
-): void {
+): Promise<void> {
   const arrayFieldStates = getFieldStatesByPath(fieldStates, arrayPath)
   if (arrayFieldStates.length === 0) return
 
   // Group field states by index
   const statesByIndex = new Map<number, Map<string, FieldStateData>>()
+  const fieldsToRevalidate: string[] = []
 
   arrayFieldStates.forEach(({ index, subPath, fieldState }) => {
     if (!statesByIndex.has(index)) {
@@ -182,7 +215,8 @@ export function swapFieldStates(
     statesByIndex.get(index)!.set(subPath, {
       isDirty: fieldState.isDirty(),
       isTouched: fieldState.isTouched(),
-      isValidating: fieldState.isValidating()
+      isValidating: fieldState.isValidating(),
+      wasValidated: fieldState.wasValidated()
     })
   })
 
@@ -212,6 +246,7 @@ export function swapFieldStates(
     fieldState.isDirty(false)
     fieldState.isTouched(false)
     fieldState.isValidating(false)
+    fieldState.wasValidated(false)
   })
 
   // Apply states to their new positions
@@ -224,15 +259,30 @@ export function swapFieldStates(
         newFieldState.isDirty(state.isDirty)
         newFieldState.isTouched(state.isTouched)
         newFieldState.isValidating(state.isValidating)
+        newFieldState.wasValidated(state.wasValidated)
+
+        // If field was validated, we need to revalidate it at the new position
+        if (state.wasValidated) {
+          fieldsToRevalidate.push(newPath)
+        }
       })
     }
   })
+
+  await revalidateFields(fieldsToRevalidate, fieldValidator)
+}
+
+async function revalidateFields(
+    paths: string[],
+    fieldValidator: (path: string) => Promise<boolean>): Promise<boolean[]> {
+
+  return Promise.all(paths.map(fieldValidator))
 }
 
 /**
  * Clean up orphaned field states beyond the array length
  */
-export function cleanupOrphanedFieldStates(
+function cleanupOrphanedFieldStates(
   fieldStates: Map<string, IFieldState>,
   arrayPath: string,
   arrayLength: number
@@ -253,6 +303,7 @@ export function cleanupOrphanedFieldStates(
           fieldState.isDirty(false)
           fieldState.isTouched(false)
           fieldState.isValidating(false)
+          fieldState.wasValidated(false)
           toDelete.push(path)
         }
       }

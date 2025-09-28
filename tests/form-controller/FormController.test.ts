@@ -252,8 +252,8 @@ describe('FormController', () => {
       expect(items[2].price).toBe(200) // Original item shifted
     })
 
-    it('should remove items from arrays', () => {
-      formController.arrayRemove('items', 0)
+    it('should remove items from arrays', async () => {
+      await formController.arrayRemove('items', 0)
 
       const items = dataSource.get('items') as any[]
       expect(items).toHaveLength(1)
@@ -261,8 +261,8 @@ describe('FormController', () => {
       expect(formController.isDirty()).toBe(true)
     })
 
-    it('should move items within arrays', () => {
-      formController.arrayMove('items', 0, 1)
+    it('should move items within arrays', async () => {
+      await formController.arrayMove('items', 0, 1)
 
       const items = dataSource.get('items') as any[]
       expect(items[0].price).toBe(200) // Second item moved to first
@@ -720,6 +720,198 @@ describe('FormController', () => {
       await formController.setValue('name', '', { validate: false, dirty: true })
 
       expect(nameField.errors()).toEqual([])
+    })
+  })
+
+  describe('array operations with validation', () => {
+    beforeEach(() => {
+      dataSource.set('items', [
+        { name: 'Item 1', value: 10 },
+        { name: 'Item 2', value: 20 },
+        { name: 'Item 3', value: 30 }
+      ])
+    })
+
+    it('should revalidate previously validated fields when inserting array item', async () => {
+      // Setup: validate some fields first
+      validator.mockFieldValidation('items.0.name', ['Error 0'])
+      validator.mockFieldValidation('items.1.name', ['Error 1'])
+      validator.mockFieldValidation('items.2.name', ['Error 2'])
+
+      const field0 = formController.field('items.0.name')
+      const field1 = formController.field('items.1.name')
+      const field2 = formController.field('items.2.name')
+
+      await formController.validateField('items.0.name')
+      await formController.validateField('items.1.name')
+      await formController.validateField('items.2.name')
+
+      expect(field0.wasValidated()).toBe(true)
+      expect(field1.wasValidated()).toBe(true)
+      expect(field2.wasValidated()).toBe(true)
+
+      // Clear validation mocks and setup new ones for shifted positions
+      validator.clearMocks()
+      validator.mockFieldValidation('items.1.name', ['New Error 1'])
+      validator.mockFieldValidation('items.2.name', ['New Error 2'])
+      validator.mockFieldValidation('items.3.name', ['New Error 3'])
+
+      // Insert item at index 1
+      await formController.arrayAdd('items', { name: 'New Item', value: 15 }, 1)
+
+      // Check that previously validated fields were revalidated at new positions
+      const newField1 = formController.field('items.1.name')
+      const newField2 = formController.field('items.2.name')
+      const newField3 = formController.field('items.3.name')
+
+      expect(newField1.value()).toBe('New Item')
+      expect(newField2.value()).toBe('Item 2')
+      expect(newField3.value()).toBe('Item 3')
+
+      expect(newField2.errors()).toEqual(['New Error 2'])
+      expect(newField3.errors()).toEqual(['New Error 3'])
+    })
+
+    it('should revalidate previously validated fields when removing array item', async () => {
+      // Setup: validate some fields first
+      validator.mockFieldValidation('items.0.name', ['Error 0'])
+      validator.mockFieldValidation('items.1.name', ['Error 1'])
+      validator.mockFieldValidation('items.2.name', ['Error 2'])
+
+      const field0 = formController.field('items.0.name')
+      const field1 = formController.field('items.1.name')
+      const field2 = formController.field('items.2.name')
+
+      await formController.validateField('items.0.name')
+      await formController.validateField('items.1.name')
+      await formController.validateField('items.2.name')
+
+      expect(field0.wasValidated()).toBe(true)
+      expect(field1.wasValidated()).toBe(true)
+      expect(field2.wasValidated()).toBe(true)
+
+      // Clear validation mocks and setup new ones for shifted positions
+      validator.clearMocks()
+      validator.mockFieldValidation('items.0.name', ['Preserved Error 0'])
+      validator.mockFieldValidation('items.1.name', ['Shifted Error 1'])
+
+      // Remove item at index 1
+      await formController.arrayRemove('items', 1)
+
+      // Check that field 0 was preserved and field 2 was shifted to position 1
+      const preservedField0 = formController.field('items.0.name')
+      const shiftedField1 = formController.field('items.1.name')
+
+      expect(preservedField0.value()).toBe('Item 1')
+      expect(shiftedField1.value()).toBe('Item 3')
+
+      expect(preservedField0.errors()).toEqual(['Preserved Error 0'])
+      expect(shiftedField1.errors()).toEqual(['Shifted Error 1'])
+    })
+
+    it('should revalidate previously validated fields when moving array items', async () => {
+      // Setup: validate some fields first
+      validator.mockFieldValidation('items.0.name', ['Error 0'])
+      validator.mockFieldValidation('items.1.name', ['Error 1'])
+      validator.mockFieldValidation('items.2.name', ['Error 2'])
+
+      const field0 = formController.field('items.0.name')
+      const field1 = formController.field('items.1.name')
+      const field2 = formController.field('items.2.name')
+
+      await formController.validateField('items.0.name')
+      await formController.validateField('items.1.name')
+      await formController.validateField('items.2.name')
+
+      expect(field0.wasValidated()).toBe(true)
+      expect(field1.wasValidated()).toBe(true)
+      expect(field2.wasValidated()).toBe(true)
+
+      // Clear validation mocks and setup new ones for moved positions
+      validator.clearMocks()
+      validator.mockFieldValidation('items.0.name', ['Moved Error 0'])
+      validator.mockFieldValidation('items.1.name', ['Moved Error 1'])
+      validator.mockFieldValidation('items.2.name', ['Moved Error 2'])
+
+      // Move item from index 0 to index 2
+      await formController.arrayMove('items', 0, 2)
+
+      // Check that fields were revalidated at their new positions
+      const movedField0 = formController.field('items.0.name')
+      const movedField1 = formController.field('items.1.name')
+      const movedField2 = formController.field('items.2.name')
+
+      expect(movedField0.value()).toBe('Item 2')
+      expect(movedField1.value()).toBe('Item 3')
+      expect(movedField2.value()).toBe('Item 1')
+
+      expect(movedField0.errors()).toEqual(['Moved Error 0'])
+      expect(movedField1.errors()).toEqual(['Moved Error 1'])
+      expect(movedField2.errors()).toEqual(['Moved Error 2'])
+    })
+
+    it('should preserve field state during array operations', async () => {
+      // Setup field states
+      const field0 = formController.field('items.0.name')
+      const field1 = formController.field('items.1.name')
+      const field2 = formController.field('items.2.name')
+
+      // Make fields dirty and touched
+      await formController.setValue('items.0.name', 'Modified 0')
+      await formController.setValue('items.1.name', 'Modified 1')
+      await formController.setValue('items.2.name', 'Modified 2')
+
+      expect(field0.isDirty()).toBe(true)
+      expect(field0.isTouched()).toBe(true)
+      expect(field1.isDirty()).toBe(true)
+      expect(field1.isTouched()).toBe(true)
+      expect(field2.isDirty()).toBe(true)
+      expect(field2.isTouched()).toBe(true)
+
+      // Insert item at index 1
+      await formController.arrayAdd('items', { name: 'New Item', value: 15 }, 1)
+
+      // Check that field states were preserved and shifted correctly
+      const newField1 = formController.field('items.1.name')
+      const shiftedField2 = formController.field('items.2.name')
+      const shiftedField3 = formController.field('items.3.name')
+
+      // New field should not be dirty/touched
+      expect(newField1.isDirty()).toBe(false)
+      expect(newField1.isTouched()).toBe(false)
+
+      // Shifted fields should preserve their states
+      expect(shiftedField2.isDirty()).toBe(true)
+      expect(shiftedField2.isTouched()).toBe(true)
+      expect(shiftedField3.isDirty()).toBe(true)
+      expect(shiftedField3.isTouched()).toBe(true)
+    })
+
+    it('should not revalidate fields that were never validated', async () => {
+      // Setup: create fields but don't validate them
+      const field0 = formController.field('items.0.name')
+      const field1 = formController.field('items.1.name')
+      const field2 = formController.field('items.2.name')
+
+      expect(field0.wasValidated()).toBe(false)
+      expect(field1.wasValidated()).toBe(false)
+      expect(field2.wasValidated()).toBe(false)
+
+      // Setup validation mocks (these should not be called)
+      validator.mockFieldValidation('items.1.name', ['Should not be called'])
+      validator.mockFieldValidation('items.2.name', ['Should not be called'])
+
+      // Insert item at index 1
+      await formController.arrayAdd('items', { name: 'New Item', value: 15 }, 1)
+
+      // Check that validation was not triggered for unvalidated fields
+      const newField1 = formController.field('items.1.name')
+      const shiftedField2 = formController.field('items.2.name')
+      const shiftedField3 = formController.field('items.3.name')
+
+      expect(newField1.errors()).toEqual([])
+      expect(shiftedField2.errors()).toEqual([])
+      expect(shiftedField3.errors()).toEqual([])
     })
   })
 })

@@ -111,6 +111,9 @@ export interface IFieldState {
   /** Whether field is currently being validated */
   readonly isValidating: Signal<boolean>
 
+  /** Whether field has been validated at least once */
+  readonly wasValidated: Signal<boolean>
+
   /** Whether field is valid */
   readonly isValid: ISignal<boolean>
 
@@ -168,13 +171,13 @@ export interface IFormController {
   destroy(): void
 
   /** Add item to array field */
-  arrayAdd(arrayPath: string, item: unknown, index?: number): void
+  arrayAdd(arrayPath: string, item: unknown, index?: number): Promise<void>
 
   /** Remove item from array field */
-  arrayRemove(arrayPath: string, index: number): void
+  arrayRemove(arrayPath: string, index: number): Promise<void>
 
   /** Move item within array field */
-  arrayMove(arrayPath: string, fromIndex: number, toIndex: number): void
+  arrayMove(arrayPath: string, fromIndex: number, toIndex: number): Promise<void>
 
   /** Set form-level errors */
   setErrors(errors: Record<string, string[]>): void

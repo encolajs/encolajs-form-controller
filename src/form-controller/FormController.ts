@@ -24,6 +24,7 @@ function createFieldState(formController: FormController, path: string): IFieldS
   const isDirty = signal(false)
   const isTouched = signal(false)
   const isValidating = signal(false)
+  const wasValidated = signal(false)
 
   // Computed value from data source
   const value = computed(() => formController.getValue(path)) as ISignal<unknown>
@@ -43,6 +44,7 @@ function createFieldState(formController: FormController, path: string): IFieldS
     isDirty,
     isTouched,
     isValidating,
+    wasValidated,
     errors,
     isValid
   }
@@ -166,6 +168,7 @@ export class FormController implements IFormController {
     } finally {
       if (fieldState) {
         fieldState.isValidating(false)
+        fieldState.wasValidated(true)
       }
     }
   }
@@ -232,6 +235,7 @@ export class FormController implements IFormController {
       fieldState.isDirty(false)
       fieldState.isTouched(false)
       fieldState.isValidating(false)
+      fieldState.wasValidated(false)
     })
 
     // Trigger data update
@@ -248,12 +252,13 @@ export class FormController implements IFormController {
   }
 
   // Array operations
-  arrayAdd(arrayPath: string, item: unknown, index?: number): void {
+  async arrayAdd(arrayPath: string, item: unknown, index?: number): Promise<void> {
     if (index !== undefined) {
       this.dataSource.arrayInsert(arrayPath, index, item)
-      insertFieldState(
+      await insertFieldState(
         this.fieldStates,
         (path) => this.field(path),
+        (path) => this.validateField(path),
         arrayPath,
         index
       )
@@ -265,12 +270,13 @@ export class FormController implements IFormController {
     this.triggerDataUpdate()
   }
 
-  arrayRemove(arrayPath: string, index: number): void {
+  async arrayRemove(arrayPath: string, index: number): Promise<void> {
     this.dataSource.arrayRemove(arrayPath, index)
     const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
-    removeFieldState(
+    await removeFieldState(
       this.fieldStates,
       (path) => this.field(path),
+      (path) => this.validateField(path),
       arrayPath,
       index,
       currentArrayLength
@@ -279,12 +285,13 @@ export class FormController implements IFormController {
     this.triggerDataUpdate()
   }
 
-  arrayMove(arrayPath: string, fromIndex: number, toIndex: number): void {
+  async arrayMove(arrayPath: string, fromIndex: number, toIndex: number): Promise<void> {
     this.dataSource.arrayMove(arrayPath, fromIndex, toIndex)
     const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
-    swapFieldStates(
+    await swapFieldStates(
       this.fieldStates,
       (path) => this.field(path),
+      (path) => this.validateField(path),
       arrayPath,
       fromIndex,
       toIndex,

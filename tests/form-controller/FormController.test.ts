@@ -416,13 +416,59 @@ describe('FormController', () => {
       expect(nameField.isTouched()).toBe(false)
     })
 
-    it('should validate when validate option is true', async () => {
+    it('should validate when validate option is explicitly true', async () => {
       validator.mockFieldValidation('name', ['Error'])
       const nameField = formController.field('name')
 
       await formController.setValue('name', '', { validate: true })
 
       expect(nameField.errors()).toEqual(['Error'])
+    })
+
+    it('should not validate when validate option is explicitly false', async () => {
+      validator.mockFieldValidation('name', ['Error'])
+      const nameField = formController.field('name')
+
+      await formController.setValue('name', '', { validate: false, dirty: true })
+
+      expect(nameField.errors()).toEqual([])
+    })
+
+    it('should validate when validate is undefined and dirty is true (default)', async () => {
+      validator.mockFieldValidation('name', ['Error'])
+      const nameField = formController.field('name')
+
+      await formController.setValue('name', '', { dirty: true })
+
+      expect(nameField.errors()).toEqual(['Error'])
+    })
+
+    it('should not validate when validate is undefined and dirty is false', async () => {
+      validator.mockFieldValidation('name', ['Error'])
+      const nameField = formController.field('name')
+
+      await formController.setValue('name', '', { dirty: false })
+
+      expect(nameField.errors()).toEqual([])
+    })
+
+    it('should validate by default when no options are provided', async () => {
+      validator.mockFieldValidation('name', ['Error'])
+      const nameField = formController.field('name')
+
+      await formController.setValue('name', '')
+
+      expect(nameField.errors()).toEqual(['Error'])
+    })
+
+    it('should prioritize explicit validate option over dirty state', async () => {
+      validator.mockFieldValidation('name', ['Error'])
+      const nameField = formController.field('name')
+
+      // validate=false should override dirty=true
+      await formController.setValue('name', '', { validate: false, dirty: true })
+
+      expect(nameField.errors()).toEqual([])
     })
   })
 })

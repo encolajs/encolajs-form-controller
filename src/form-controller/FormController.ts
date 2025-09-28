@@ -101,7 +101,7 @@ export class FormController implements IFormController {
 
   async setValue(path: string, value: unknown, options: FormSetValueOptions = {}): Promise<void> {
     const {
-      validate = true,
+      validate,
       touch = true,
       dirty = true
     } = options
@@ -133,8 +133,11 @@ export class FormController implements IFormController {
       }
     }
 
-    // Validate if requested
-    if (validate) {
+    // Determine if validation should be triggered
+    // Priority: explicit validate option > dirty=true triggers validation
+    const shouldValidate = validate !== undefined ? validate : dirty
+
+    if (shouldValidate) {
       await this.validateField(path)
     }
   }

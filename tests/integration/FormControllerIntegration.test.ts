@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { FormController } from '../../src/form-controller/FormController'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 import { MockFormValidator } from '../mocks/MockFormValidator'
-import { effect, Signal } from 'alien-signals'
+import { effect } from 'alien-signals'
 
 describe('FormController Integration', () => {
   let formController: FormController
@@ -411,14 +411,15 @@ describe('FormController Integration', () => {
 
       // Perform operations on large dataset
       await largeController.setValue('items.500.name', 'Updated Item 500')
-      largeController.arrayAdd('items', { id: 1000, name: 'New Item', value: 500, tags: [] })
       await largeController.validate()
+      largeController.arrayAdd('items', { id: 1000, name: 'New Item', value: 500, tags: [] }, 501)
+      largeController.arrayMove('items', 999, 3)
 
       const endTime = Date.now()
 
       // Should complete in reasonable time
-      expect(endTime - startTime).toBeLessThan(1000)
-      expect(largeController.field('items.500.name').value()).toBe('Updated Item 500')
+      expect(endTime - startTime).toBeLessThan(300)
+      expect(largeController.field('items.501.name').value()).toBe('Updated Item 500')
     })
 
     it('should properly cleanup resources', () => {

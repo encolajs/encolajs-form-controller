@@ -6,7 +6,7 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [
     dts({
-      include: ['zod.ts', 'yup.ts', 'valibot.ts'],
+      include: ['zod.ts', 'yup.ts', 'valibot.ts', 'encola.ts'],
       exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
       insertTypesEntry: false // Don't generate main types, only for adapters
     })
@@ -18,13 +18,14 @@ export default defineConfig({
       entry: {
         zod: resolve(__dirname, 'zod.ts'),
         yup: resolve(__dirname, 'yup.ts'),
-        valibot: resolve(__dirname, 'valibot.ts')
+        valibot: resolve(__dirname, 'valibot.ts'),
+        encola: resolve(__dirname, 'encolajs-validator.ts')
       },
       formats: ['es'], // Only ES modules for tree-shaking
       fileName: (format, entryName) => `${entryName}.${format}.js`
     },
     rollupOptions: {
-      external: ['alien-signals', 'zod', 'yup', 'valibot'],
+      external: ['alien-signals', 'zod', 'yup', 'valibot', '@encolajs/validator'],
       output: {
         preserveModules: false
       }

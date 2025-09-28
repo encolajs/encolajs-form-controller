@@ -23,6 +23,10 @@
     "./valibot": {
       "import": "./dist/valibot.es.js",
       "types": "./dist/valibot.d.ts"
+    },
+    "./encola": {
+      "import": "./dist/encola.es.js",
+      "types": "./dist/encola.d.ts"
     }
   },
   "unpkg": "./dist/index.umd.js",
@@ -31,7 +35,8 @@
     "dist",
     "zod.ts",
     "yup.ts",
-    "valibot.ts"
+    "valibot.ts",
+    "encolajs-validator.ts"
   ],
   "scripts": {
     "prebuild": "tsc --emitDeclarationOnly",
@@ -75,11 +80,15 @@
     "alien-signals": "^3.0.0"
   },
   "peerDependencies": {
+    "@encolajs/validator": ">=1.3.0",
     "valibot": ">=1.1.0",
     "yup": ">=1.7.0",
     "zod": ">=4.0.0"
   },
   "peerDependenciesMeta": {
+    "@encolajs/validator": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     },
@@ -91,6 +100,7 @@
     }
   },
   "devDependencies": {
+    "@encolajs/validator": "^1.3.2",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",

@@ -10,6 +10,11 @@ import type {
 } from '../types'
 import { PlainObjectDataSource } from '../data-sources/PlainObjectDataSource'
 import { NoopValidator } from '../validators/NoopValidator'
+import {
+  insertFieldState,
+  removeFieldState,
+  swapFieldStates
+} from '../utils/arrayFieldStateUtils'
 
 /**
  * Factory function to create field state objects
@@ -246,6 +251,12 @@ export class FormController implements IFormController {
   arrayAdd(arrayPath: string, item: unknown, index?: number): void {
     if (index !== undefined) {
       this.dataSource.arrayInsert(arrayPath, index, item)
+      insertFieldState(
+        this.fieldStates,
+        (path) => this.field(path),
+        arrayPath,
+        index
+      )
     } else {
       this.dataSource.arrayPush(arrayPath, item)
     }
@@ -256,12 +267,29 @@ export class FormController implements IFormController {
 
   arrayRemove(arrayPath: string, index: number): void {
     this.dataSource.arrayRemove(arrayPath, index)
+    const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
+    removeFieldState(
+      this.fieldStates,
+      (path) => this.field(path),
+      arrayPath,
+      index,
+      currentArrayLength
+    )
     this.isDirty(true)
     this.triggerDataUpdate()
   }
 
   arrayMove(arrayPath: string, fromIndex: number, toIndex: number): void {
     this.dataSource.arrayMove(arrayPath, fromIndex, toIndex)
+    const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
+    swapFieldStates(
+      this.fieldStates,
+      (path) => this.field(path),
+      arrayPath,
+      fromIndex,
+      toIndex,
+      currentArrayLength
+    )
     this.isDirty(true)
     this.triggerDataUpdate()
   }
@@ -331,5 +359,6 @@ export class FormController implements IFormController {
   triggerDataUpdate(): void {
     this.dataSignal(this.dataSource.all())
   }
+
 
 }

@@ -271,6 +271,257 @@ describe('FormController', () => {
     })
   })
 
+  describe('field state preservation during array operations', () => {
+    beforeEach(async () => {
+      // Set up initial field states with dirty and touched states
+      const field0Price = formController.field('items.0.price')
+      const field0Quantity = formController.field('items.0.quantity')
+      const field1Price = formController.field('items.1.price')
+
+      // Make some fields dirty and touched
+      await formController.setValue('items.0.price', 150, { validate: false })
+      await formController.setValue('items.0.quantity', 5, { validate: false })
+      await formController.setValue('items.1.price', 250, { validate: false })
+
+      // Verify initial state
+      expect(field0Price.isDirty()).toBe(true)
+      expect(field0Quantity.isDirty()).toBe(true)
+      expect(field1Price.isDirty()).toBe(true)
+    })
+
+    describe('array insert operations', () => {
+      it('should shift field states when inserting at beginning', () => {
+        const newItem = { price: 50, quantity: 1 }
+
+        // Get field references before operation
+        const originalField0Price = formController.field('items.0.price')
+        const originalField0Quantity = formController.field('items.0.quantity')
+        const originalField1Price = formController.field('items.1.price')
+
+        // Verify initial dirty states
+        expect(originalField0Price.isDirty()).toBe(true)
+        expect(originalField0Quantity.isDirty()).toBe(true)
+        expect(originalField1Price.isDirty()).toBe(true)
+
+        // Insert at beginning
+        formController.arrayAdd('items', newItem, 0)
+
+        // After insertion, the original items.0 data should now be at items.1
+        // but the field state for items.0 should be clean (new item)
+        // and items.1 should have the dirty state from original items.0
+        const newField0Price = formController.field('items.0.price')
+        const newField1Price = formController.field('items.1.price')
+        const newField1Quantity = formController.field('items.1.quantity')
+        const newField2Price = formController.field('items.2.price')
+
+        // New item at index 0 should have clean state
+        expect(newField0Price.isDirty()).toBe(false)
+        expect(newField0Price.value()).toBe(50)
+
+        // Original items.0 state should move to items.1
+        expect(newField1Price.isDirty()).toBe(true)
+        expect(newField1Quantity.isDirty()).toBe(true)
+        expect(newField1Price.value()).toBe(150) // Original modified value
+        expect(newField1Quantity.value()).toBe(5) // Original modified value
+
+        // Original items.1 state should move to items.2
+        expect(newField2Price.isDirty()).toBe(true)
+        expect(newField2Price.value()).toBe(250) // Original modified value
+      })
+
+      it('should shift field states when inserting in middle', () => {
+        const newItem = { price: 175, quantity: 2 }
+
+        // Insert at index 1
+        formController.arrayAdd('items', newItem, 1)
+
+        // Original items.0 should remain unchanged
+        const field0Price = formController.field('items.0.price')
+        const field0Quantity = formController.field('items.0.quantity')
+        expect(field0Price.isDirty()).toBe(true)
+        expect(field0Quantity.isDirty()).toBe(true)
+        expect(field0Price.value()).toBe(150)
+        expect(field0Quantity.value()).toBe(5)
+
+        // New item at index 1 should have clean state
+        const field1Price = formController.field('items.1.price')
+        expect(field1Price.isDirty()).toBe(false)
+        expect(field1Price.value()).toBe(175)
+
+        // Original items.1 should move to items.2 with its dirty state
+        const field2Price = formController.field('items.2.price')
+        expect(field2Price.isDirty()).toBe(true)
+        expect(field2Price.value()).toBe(250)
+      })
+
+      it('should not affect field states when appending at end', () => {
+        const newItem = { price: 400, quantity: 4 }
+
+        // Append at end
+        formController.arrayAdd('items', newItem)
+
+        // Original field states should remain unchanged
+        const field0Price = formController.field('items.0.price')
+        const field0Quantity = formController.field('items.0.quantity')
+        const field1Price = formController.field('items.1.price')
+
+        expect(field0Price.isDirty()).toBe(true)
+        expect(field0Quantity.isDirty()).toBe(true)
+        expect(field1Price.isDirty()).toBe(true)
+
+        // New item should have clean state
+        const field2Price = formController.field('items.2.price')
+        expect(field2Price.isDirty()).toBe(false)
+        expect(field2Price.value()).toBe(400)
+      })
+    })
+
+    describe('array remove operations', () => {
+      it('should shift field states when removing from beginning', () => {
+        // Remove first item
+        formController.arrayRemove('items', 0)
+
+        // Original items.1 should move to items.0 with its dirty state
+        const field0Price = formController.field('items.0.price')
+        expect(field0Price.isDirty()).toBe(true)
+        expect(field0Price.value()).toBe(250) // Original items.1 value
+
+        // Field states for removed item should be cleaned up
+        // items.1 should now be clean since we only have 1 item left
+        const field1Price = formController.field('items.1.price')
+        expect(field1Price.isDirty()).toBe(false)
+        expect(field1Price.value()).toBeUndefined()
+      })
+
+      it('should shift field states when removing from middle', async () => {
+        // Add a third item with dirty state first
+        const originalField2Price = formController.field('items.2.price') // Create field state first
+        await formController.setValue('items.2.price', 350, { validate: false })
+        const newItem = { price: 999, quantity: 9 }
+        formController.arrayAdd('items', newItem)
+
+        // Remove middle item (index 1)
+        formController.arrayRemove('items', 1)
+
+        // Original items.0 should remain unchanged
+        const field0Price = formController.field('items.0.price')
+        const field0Quantity = formController.field('items.0.quantity')
+        expect(field0Price.isDirty()).toBe(true)
+        expect(field0Quantity.isDirty()).toBe(true)
+
+        // Original items.2 should move to items.1
+        const field1Price = formController.field('items.1.price')
+        expect(field1Price.isDirty()).toBe(true)
+        expect(field1Price.value()).toBe(350)
+
+        // items.2 should now be the appended item
+        const field2Price = formController.field('items.2.price')
+        expect(field2Price.isDirty()).toBe(false)
+        expect(field2Price.value()).toBe(999)
+      })
+
+      it('should clean up field states when removing from end', () => {
+        // Remove last item
+        formController.arrayRemove('items', 1)
+
+        // Original items.0 should remain unchanged
+        const field0Price = formController.field('items.0.price')
+        const field0Quantity = formController.field('items.0.quantity')
+        expect(field0Price.isDirty()).toBe(true)
+        expect(field0Quantity.isDirty()).toBe(true)
+
+        // Removed item's field state should be cleaned
+        const field1Price = formController.field('items.1.price')
+        expect(field1Price.isDirty()).toBe(false)
+        expect(field1Price.value()).toBeUndefined()
+      })
+    })
+
+    describe('array move operations', () => {
+      it('should swap field states when moving items', () => {
+        // Move first item to second position
+        formController.arrayMove('items', 0, 1)
+
+        // Field states should move with the data
+        const field0Price = formController.field('items.0.price')
+        const field0Quantity = formController.field('items.0.quantity')
+        const field1Price = formController.field('items.1.price')
+        const field1Quantity = formController.field('items.1.quantity')
+
+        // items.0 should now have the state from original items.1
+        expect(field0Price.isDirty()).toBe(true)
+        expect(field0Price.value()).toBe(250) // Original items.1 value
+        expect(field0Quantity.isDirty()).toBe(false) // items.1.quantity was not dirty
+
+        // items.1 should now have the state from original items.0
+        expect(field1Price.isDirty()).toBe(true)
+        expect(field1Quantity.isDirty()).toBe(true)
+        expect(field1Price.value()).toBe(150) // Original items.0 value
+        expect(field1Quantity.value()).toBe(5) // Original items.0 value
+      })
+
+      it('should handle complex move operations', async () => {
+        // Add more items and states
+        const newItem1 = { price: 300, quantity: 3 }
+        const newItem2 = { price: 400, quantity: 4 }
+        formController.arrayAdd('items', newItem1)
+        formController.arrayAdd('items', newItem2)
+
+        // Create field states first, then set values
+        formController.field('items.2.price')
+        formController.field('items.3.quantity')
+        await formController.setValue('items.2.price', 350, { validate: false })
+        await formController.setValue('items.3.quantity', 8, { validate: false })
+
+        // Move item from index 0 to index 3
+        formController.arrayMove('items', 0, 3)
+
+        // Original items.0 should now be at items.3
+        const field3Price = formController.field('items.3.price')
+        const field3Quantity = formController.field('items.3.quantity')
+        expect(field3Price.isDirty()).toBe(true)
+        expect(field3Quantity.isDirty()).toBe(true)
+        expect(field3Price.value()).toBe(150)
+        expect(field3Quantity.value()).toBe(5)
+
+        // Other items should shift accordingly
+        const field0Price = formController.field('items.0.price')
+        expect(field0Price.value()).toBe(250) // Original items.1
+
+        const field2Price = formController.field('items.2.price')
+        const field2Quantity = formController.field('items.2.quantity')
+        expect(field2Price.isDirty()).toBe(false) // Original items.3, quantity was dirty
+        expect(field2Quantity.isDirty()).toBe(true) // Original items.3 quantity
+        expect(field2Quantity.value()).toBe(8)
+      })
+    })
+
+    describe('field state cleanup', () => {
+      it('should remove orphaned field states after array operations', () => {
+        // Create field states for all items
+        formController.field('items.0.price')
+        formController.field('items.1.price')
+        formController.field('items.2.price') // This doesn't exist in data but creates field state
+
+        // Remove all items
+        formController.arrayRemove('items', 0)
+        formController.arrayRemove('items', 0)
+
+        // All field states should be cleaned up
+        const field0Price = formController.field('items.0.price')
+        const field1Price = formController.field('items.1.price')
+        const field2Price = formController.field('items.2.price')
+
+        expect(field0Price.isDirty()).toBe(false)
+        expect(field1Price.isDirty()).toBe(false)
+        expect(field2Price.isDirty()).toBe(false)
+        expect(field0Price.value()).toBeUndefined()
+        expect(field1Price.value()).toBeUndefined()
+        expect(field2Price.value()).toBeUndefined()
+      })
+    })
+  })
+
   describe('reactive state updates', () => {
     it('should update isDirty when fields change', async () => {
       expect(formController.isDirty()).toBe(false)

@@ -5,16 +5,11 @@
 </template>
 
 <script setup>
-import 'primeicons/primeicons.css'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { createApp, h } from 'vue'
 
 const props = defineProps({
   component: String | Object,
-  preset: {
-    type: String,
-    default: 'primevue'
-  }
 })
 
 const el = ref()
@@ -23,66 +18,6 @@ onMounted(() => {
   const app = createApp({
     render: () => h(props.component)
   })
-
-  // configure Enforma
-  app.use(EnformaPlugin)
-
-  if (props.preset === 'primevue') {
-    // configure PrimeVue
-    app.use(PrimeVue, {
-      theme: {
-        preset: Aura,
-        options: {
-          prefix: 'p',
-          darkModeSelector: 'system',
-          cssLayer: false
-        }
-      }
-    })
-    usePrimeVuePreset({
-      input: InputText,
-      text: InputText,
-      select: Select,
-      toggle: ToggleSwitch,
-      button: Button
-    })
-  } else if (props.preset === 'vuetify') {
-    // Configure Vuetify
-    const vuetify = createVuetify({
-      theme: {
-        defaultTheme: 'light'
-      }
-    })
-    app.use(vuetify)
-    
-    // Apply Vuetify preset
-    useVuetifyPreset({
-      input: VTextField,
-      text: VTextField,
-    })
-  } else if (props.preset === 'quasar') {
-    // Configure Quasar
-    app.use(Quasar, {
-      plugins: {}, // import Quasar plugins here if needed
-      config: {
-        brand: {
-          primary: '#1976D2',
-          secondary: '#26A69A',
-          accent: '#9C27B0',
-          positive: '#21BA45',
-          negative: '#C10015',
-          info: '#31CCEC',
-          warning: '#F2C037'
-        }
-      }
-    })
-    
-    // Apply Quasar preset
-    useQuasarPreset({
-      input: QInput,
-      text: QInput,
-    })
-  }
 
   app.mount(el.value)
 

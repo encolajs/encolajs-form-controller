@@ -55,8 +55,8 @@ export class FormController implements IFormController {
   // Form-level reactive state
   readonly isSubmitting: Signal<boolean>
   readonly isValidating: Signal<boolean>
-  readonly isDirty: Signal<boolean>
-  readonly isTouched: Signal<boolean>
+  readonly isDirty: ISignal<boolean>
+  readonly isTouched: ISignal<boolean>
   readonly isValid: ISignal<boolean>
 
   // Internal state
@@ -66,6 +66,7 @@ export class FormController implements IFormController {
   private fieldStates: Map<string, IFieldState> = new Map()
   readonly dataChanged: Signal<number>
   readonly errorsChanged: Signal<number>
+  private readonly fieldStatesSize: Signal<number>
   private errors: Record<string, string[]> = {}
 
   constructor(dataSource: DataSource, validator?: FormValidator) {
@@ -76,12 +77,22 @@ export class FormController implements IFormController {
     // Initialize reactive signals
     this.isSubmitting = signal(false)
     this.isValidating = signal(false)
-    this.isDirty = signal(false)
-    this.isTouched = signal(false)
 
     // Incrementor signals for triggering reactivity
     this.dataChanged = signal(0)
     this.errorsChanged = signal(0)
+    this.fieldStatesSize = signal(0)
+
+    // Computed form-level state from field states
+    this.isDirty = computed(() => {
+      this.fieldStatesSize() // Subscribe to field states map changes
+      return Array.from(this.fieldStates.values()).some(field => field.isDirty())
+    }) as ISignal<boolean>
+
+    this.isTouched = computed(() => {
+      this.fieldStatesSize() // Subscribe to field states map changes
+      return Array.from(this.fieldStates.values()).some(field => field.isTouched())
+    }) as ISignal<boolean>
 
     // Computed form validity
     this.isValid = computed(() => {
@@ -95,6 +106,7 @@ export class FormController implements IFormController {
     if (!this.fieldStates.has(path)) {
       const fieldState = createFieldState(this, path)
       this.fieldStates.set(path, fieldState)
+      this.fieldStatesSize(this.fieldStates.size)
     }
 
     return this.fieldStates.get(path)!
@@ -117,30 +129,22 @@ export class FormController implements IFormController {
     // Trigger data source reactivity
     this.triggerDataUpdate()
 
-    // Update form-level state
+    // Form-level state is now computed from field states
+
+    // Ensure field state exists and update it
+    const fieldState = this.field(path) // This creates the field state if it doesn't exist
     if (dirty) {
-      this.isDirty(true)
+      fieldState.isDirty(true)
     }
 
     if (touch) {
-      this.isTouched(true)
+      fieldState.isTouched(true)
     }
 
-    // Update field state if field exists
-    const fieldState = this.fieldStates.get(path)
-    if (fieldState) {
-      if (dirty) {
-        fieldState.isDirty(true)
-      }
-
-      if (touch) {
-        fieldState.isTouched(true)
-      }
-    }
 
     // Determine if validation should be triggered
     // Priority: explicit validate option > dirty=true triggers validation
-    const shouldValidate = validate !== undefined ? validate : dirty
+    const shouldValidate = fieldState.wasValidated() || (validate !== undefined ? validate : dirty)
 
     if (shouldValidate) {
       await this.validateField(path)
@@ -225,8 +229,6 @@ export class FormController implements IFormController {
     this.dataSource = new PlainObjectDataSource(initialData)
 
     // Reset form-level state
-    this.isDirty(false)
-    this.isTouched(false)
     this.errors = {}
     this.errorsChanged(this.errorsChanged() + 1)
 
@@ -266,7 +268,10 @@ export class FormController implements IFormController {
       this.dataSource.arrayPush(arrayPath, item)
     }
 
-    this.isDirty(true)
+    // Mark array field as dirty
+    const arrayField = this.field(arrayPath)
+    arrayField.isDirty(true)
+
     this.triggerDataUpdate()
   }
 
@@ -281,7 +286,11 @@ export class FormController implements IFormController {
       index,
       currentArrayLength
     )
-    this.isDirty(true)
+
+    // Mark array field as dirty
+    const arrayField = this.field(arrayPath)
+    arrayField.isDirty(true)
+
     this.triggerDataUpdate()
   }
 
@@ -297,7 +306,11 @@ export class FormController implements IFormController {
       toIndex,
       currentArrayLength
     )
-    this.isDirty(true)
+
+    // Mark array field as dirty
+    const arrayField = this.field(arrayPath)
+    arrayField.isDirty(true)
+
     this.triggerDataUpdate()
   }
 
@@ -325,7 +338,7 @@ export class FormController implements IFormController {
       }
     })
 
-    this.setTouched(true)
+    // Form isTouched is now computed from field states
   }
 
   // Internal helper methods
@@ -347,19 +360,6 @@ export class FormController implements IFormController {
     this.errorsChanged(this.errorsChanged() + 1)
   }
 
-  /**
-   * Set dirty state
-   */
-  setDirty(dirty: boolean): void {
-    this.isDirty(dirty)
-  }
-
-  /**
-   * Set touched state
-   */
-  setTouched(touched: boolean): void {
-    this.isTouched(touched)
-  }
 
   /**
    * Trigger data update (to notify computed values)

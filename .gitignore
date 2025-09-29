@@ -2,4 +2,5 @@
 node_modules
 dist
 coverage/
+docs/.vitepress/cache/
 .claude/settings.local.json

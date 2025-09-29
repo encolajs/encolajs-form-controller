@@ -8,17 +8,14 @@ import type {
   Signal,
   ISignal
 } from '../types'
-import { PlainObjectDataSource } from '../data-sources/PlainObjectDataSource'
-import { NoopValidator } from '../validators/NoopValidator'
+import { PlainObjectDataSource } from '@/data-sources'
+import { NoopValidator } from '@/validators'
 import {
   insertFieldState,
   removeFieldState,
   swapFieldStates
 } from '../utils/arrayFieldStateUtils'
 
-/**
- * Factory function to create field state objects
- */
 function createFieldState(formController: FormController, path: string): IFieldState {
   // Individual field state signals
   const isDirty = signal(false)
@@ -27,12 +24,15 @@ function createFieldState(formController: FormController, path: string): IFieldS
   const wasValidated = signal(false)
 
   // Computed value from data source
-  const value = computed(() => formController.getValue(path)) as ISignal<unknown>
+  const value = computed(() => {
+    formController.dataChanged() // Subscribe to data changes
+    return formController.getValue(path)
+  }) as ISignal<unknown>
 
   // Computed field errors from form controller
   const errors = computed(() => {
-    const formErrors = formController.getErrors()
-    return formErrors[path] || []
+    formController.errorsChanged() // Subscribe to errors changes
+    return formController.getErrors()[path] || []
   }) as ISignal<string[]>
 
   // Computed field validity
@@ -51,9 +51,6 @@ function createFieldState(formController: FormController, path: string): IFieldS
 }
 
 
-/**
- * Main FormController implementation using alien-signals for reactivity
- */
 export class FormController implements IFormController {
   // Form-level reactive state
   readonly isSubmitting: Signal<boolean>
@@ -67,8 +64,9 @@ export class FormController implements IFormController {
   private initialDataSource: DataSource
   private validator: FormValidator
   private fieldStates: Map<string, IFieldState> = new Map()
-  private dataSignal: Signal<Record<string, unknown>>
-  private errorsSignal: Signal<Record<string, string[]>>
+  readonly dataChanged: Signal<number>
+  readonly errorsChanged: Signal<number>
+  private errors: Record<string, string[]> = {}
 
   constructor(dataSource: DataSource, validator?: FormValidator) {
     this.dataSource = dataSource
@@ -81,14 +79,14 @@ export class FormController implements IFormController {
     this.isDirty = signal(false)
     this.isTouched = signal(false)
 
-    // Data and errors signals for triggering reactivity
-    this.dataSignal = signal(this.dataSource.all())
-    this.errorsSignal = signal({})
+    // Incrementor signals for triggering reactivity
+    this.dataChanged = signal(0)
+    this.errorsChanged = signal(0)
 
     // Computed form validity
     this.isValid = computed(() => {
-      const errors = this.errorsSignal()
-      return Object.keys(errors).length === 0
+      this.errorsChanged() // Subscribe to errors changes
+      return Object.keys(this.errors).length === 0
     }) as ISignal<boolean>
   }
 
@@ -174,7 +172,7 @@ export class FormController implements IFormController {
   }
 
   getErrors(): Record<string, string[]> {
-    return this.errorsSignal()
+    return this.errors
   }
 
   getValues(): Record<string, unknown> {
@@ -187,7 +185,8 @@ export class FormController implements IFormController {
     try {
       const errors = await this.validator.validate(this.dataSource)
 
-      this.errorsSignal(errors)
+      this.errors = errors
+      this.errorsChanged(this.errorsChanged() + 1)
 
       return Object.keys(errors).length === 0
     } catch (error) {
@@ -228,7 +227,8 @@ export class FormController implements IFormController {
     // Reset form-level state
     this.isDirty(false)
     this.isTouched(false)
-    this.errorsSignal({})
+    this.errors = {}
+    this.errorsChanged(this.errorsChanged() + 1)
 
     // Reset all field states
     this.fieldStates.forEach(fieldState => {
@@ -303,8 +303,7 @@ export class FormController implements IFormController {
 
   setErrors(errors: Record<string, string[]>): void {
     // Get current errors and merge with new ones
-    const currentErrors = this.errorsSignal()
-    const updatedErrors = { ...currentErrors }
+    const updatedErrors = { ...this.errors }
 
     // Update/remove errors for specified fields
     Object.keys(errors).forEach(path => {
@@ -315,7 +314,8 @@ export class FormController implements IFormController {
       }
     })
 
-    this.errorsSignal(updatedErrors)
+    this.errors = updatedErrors
+    this.errorsChanged(this.errorsChanged() + 1)
 
     // Mark affected fields as touched
     Object.keys(errors).forEach(path => {
@@ -335,7 +335,7 @@ export class FormController implements IFormController {
    * Set errors for a specific field
    */
   setFieldErrors(path: string, errors: string[]): void {
-    const currentErrors = { ...this.errorsSignal() }
+    const currentErrors = { ...this.errors }
 
     if (errors.length > 0) {
       currentErrors[path] = errors
@@ -343,7 +343,8 @@ export class FormController implements IFormController {
       delete currentErrors[path]
     }
 
-    this.errorsSignal(currentErrors)
+    this.errors = currentErrors
+    this.errorsChanged(this.errorsChanged() + 1)
   }
 
   /**
@@ -364,7 +365,7 @@ export class FormController implements IFormController {
    * Trigger data update (to notify computed values)
    */
   triggerDataUpdate(): void {
-    this.dataSignal(this.dataSource.all())
+    this.dataChanged(this.dataChanged() + 1)
   }
 
 

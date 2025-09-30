@@ -11,11 +11,7 @@ This example demonstrates a complete form implementation using EncolaJS Form Con
 </ClientOnly>
 
 > [!WARNING]
-> The code below is for demo purposes only to showcase how you can implement responding to reactivity of the `formController`
-> You should create an abstraction that is reusable based on project specifics.
-> For example instead of binding events to the body you would bind them to the form, repeatable fields would be manipulated instead of being re-rendered etc.
-
-> [!INFO]
+> The code below is for demo purposes only to showcase how you can implement responding to reactivity of the `formController`<br>
 > The code contains comments that explain the logic behind various decisions.
 
 :::code-group
@@ -78,240 +74,306 @@ const form = new FormController(dataSource, validator)
 // Make form globally available for debugging
 window.form = form
 
-// DOM utility functions
-function getErrorContainer(fieldPath) {
-    return document.querySelector(`[data-error="${fieldPath}"]`)
-}
+/**
+ * Binds a form element to a FormController with automatic reactivity and event handling
+ * This is a reusable function that can be used across different forms
+ *
+ * @param {HTMLFormElement} formElement - The form element to bind
+ * @param {FormController} formController - The form controller instance
+ * @param {Object} options - Configuration options
+ * @param {Object} options.arrayDefaults - Default items for array fields
+ * @param {Function} options.onSubmit - Custom submit handler
+ * @param {Function} options.onReset - Custom reset handler
+ */
+function bindFormToController(formElement, formController, options = {}) {
+    const {
+        arrayDefaults = {},
+        onSubmit = null,
+        onReset = null
+    } = options
 
-function updateFieldValue(fieldPath, value, options = {}) {
-    form.setValue(fieldPath, value, options).catch(console.error)
-}
-
-function updateErrorDisplay(fieldPath, errors) {
-    const container = getErrorContainer(fieldPath)
-    if (!container) return
-
-    container.innerHTML = errors.length > 0
-        ? `<div class="text-red-500 text-sm">${errors[0]}</div>`
-        : ''
-}
-
-function updateFormState() {
-    // Update form-level state indicators
-    const isDirtyElement = document.querySelector('[data-form-dirty]')
-    const isTouchedElement = document.querySelector('[data-form-touched]')
-    const isValidElement = document.querySelector('[data-form-valid]')
-
-    if (isDirtyElement) {
-        isDirtyElement.textContent = form.isDirty() ? 'Has Changes' : 'No Changes'
-        isDirtyElement.className = form.isDirty()
-            ? 'text-orange-600 font-medium'
-            : 'text-gray-500'
+    // DOM utility functions (scoped to the form)
+    function getErrorContainer(fieldPath) {
+        return formElement.querySelector(`[data-error="${fieldPath}"]`)
     }
 
-    if (isTouchedElement) {
-        isTouchedElement.textContent = form.isTouched() ? 'Touched' : 'Untouched'
+    function updateFieldValue(fieldPath, value, options = {}) {
+        formController.setValue(fieldPath, value, options).catch(console.error)
     }
 
-    if (isValidElement) {
-        isValidElement.textContent = form.isValid() ? 'Valid' : 'Invalid'
-        isValidElement.className = form.isValid()
-            ? 'text-green-600 font-medium'
-            : 'text-red-600 font-medium'
-    }
-}
+    function updateErrorDisplay(fieldPath, errors) {
+        const container = getErrorContainer(fieldPath)
+        if (!container) return
 
-function handleFieldChange(event) {
-    const element = event.target
-    const fieldPath = event.target.getAttribute('name')
-
-    if (!fieldPath) return
-
-    let value = element.value
-
-    // Handle different input types
-    if (element.type === 'checkbox') {
-        value = element.checked
-    } else if (element.type === 'number') {
-        value = element.value === '' ? undefined : Number(element.value)
+        container.innerHTML = errors.length > 0
+            ? `<div class="text-red-500 text-sm">${errors[0]}</div>`
+            : ''
     }
 
-    // handle `input` and `change` events differently to improve the UX
-    updateFieldValue(fieldPath, value, {
-        touched: event.type === 'input',
-        dirty: event.type === 'change',
-    })
-}
+    function updateFormState() {
+        // Update form-level state indicators (scoped to the form)
+        const isDirtyElement = formElement.querySelector('[data-form-dirty]')
+        const isTouchedElement = formElement.querySelector('[data-form-touched]')
+        const isValidElement = formElement.querySelector('[data-form-valid]')
 
-function handleArrayAction(event) {
-    const action = event.target.dataset.arrayAction
-    const arrayPath = event.target.dataset.arrayPath
-    const index = event.target.dataset.arrayIndex
-
-    if (!action || !arrayPath) return
-
-    switch (action) {
-        case 'add':
-            const newItem = getDefaultArrayItem(arrayPath)
-            form.arrayAdd(arrayPath, newItem).catch(console.error)
-            break
-
-        case 'remove':
-            if (index !== undefined) {
-                form.arrayRemove(arrayPath, parseInt(index)).catch(console.error)
-            }
-            break
-
-        case 'move-up':
-            if (index !== undefined && index > 0) {
-                form.arrayMove(arrayPath, parseInt(index), parseInt(index) - 1).catch(console.error)
-            }
-            break
-
-        case 'move-down':
-            if (index !== undefined) {
-                const array = form.getValue(arrayPath)
-                if (Array.isArray(array) && index < array.length - 1) {
-                    form.arrayMove(arrayPath, parseInt(index), parseInt(index) + 1).catch(console.error)
-                }
-            }
-            break
-    }
-}
-
-function getDefaultArrayItem(arrayPath) {
-    // Return default items based on array path
-    switch (arrayPath) {
-        case 'contacts':
-            return { name: '', email: '' }
-        default:
-            return {}
-    }
-}
-
-function handleFormSubmit(event) {
-    event.preventDefault()
-
-    form.submit().then(success => {
-        if (success) {
-            alert('Form submitted successfully!')
-            console.log('Form data:', form.getValues())
-        } else {
-            alert('Please fix the errors before submitting')
+        if (isDirtyElement) {
+            isDirtyElement.textContent = formController.isDirty() ? 'Has Changes' : 'No Changes'
+            isDirtyElement.className = formController.isDirty()
+                ? 'text-orange-600 font-medium'
+                : 'text-gray-500'
         }
-    }).catch(console.error)
-}
 
-function handleFormReset(event) {
-    event.preventDefault()
-    form.reset()
-    // Manually trigger re-render of dynamic content
-    renderContactsList()
-}
+        if (isTouchedElement) {
+            isTouchedElement.textContent = formController.isTouched() ? 'Touched' : 'Untouched'
+        }
 
-// Dynamic content rendering
-function renderContactsList() {
-    const container = document.querySelector('[data-contacts-list]')
-    if (!container) return
+        if (isValidElement) {
+            isValidElement.textContent = formController.isValid() ? 'Valid' : 'Invalid'
+            isValidElement.className = formController.isValid()
+                ? 'text-green-600 font-medium'
+                : 'text-red-600 font-medium'
+        }
+    }
 
-    const contacts = form.getValue('contacts') || []
+    function handleFieldChange(event) {
+        const element = event.target
+        const fieldPath = element.getAttribute('name')
 
-    container.innerHTML = contacts.map((contact, index) => `
-        <div class="border border-gray-200 rounded-lg p-4 space-y-4">
-            <div class="flex justify-between items-center">
-                <h4 class="font-medium text-gray-900">Contact ${index + 1}</h4>
-                <div class="flex gap-2">
-                    <button type="button"
-                            data-array-action="move-up"
-                            data-array-path="contacts"
-                            data-array-index="${index}"
-                            class="text-blue-600 hover:text-blue-800 text-sm"
-                            ${index === 0 ? 'disabled' : ''}>↑</button>
-                    <button type="button"
-                            data-array-action="move-down"
-                            data-array-path="contacts"
-                            data-array-index="${index}"
-                            class="text-blue-600 hover:text-blue-800 text-sm"
-                            ${index === contacts.length - 1 ? 'disabled' : ''}>↓</button>
-                    <button type="button"
-                            data-array-action="remove"
-                            data-array-path="contacts"
-                            data-array-index="${index}"
-                            class="text-red-600 hover:text-red-800 text-sm">Remove</button>
-                </div>
-            </div>
+        if (!fieldPath) return
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Name</label>
-                    <input type="text"
-                           name="contacts.${index}.name"
-                           value="${contact.name || ''}"
-                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <div data-error="contacts.${index}.name"></div>
-                </div>
+        let value = element.value
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email"
-                           name="contacts.${index}.email"
-                           value="${contact.email || ''}"
-                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <div data-error="contacts.${index}.email"></div>
-                </div>
-            </div>
-        </div>
-    `).join('')
-}
+        // Handle different input types
+        if (element.type === 'checkbox') {
+            value = element.checked
+        } else if (element.type === 'number') {
+            value = element.value === '' ? undefined : Number(element.value)
+        }
 
-// Scalable solution - automatically handles any field without manual setup
-function setupAutoReactivity() {
-    // Form-level state reactivity
-    effect(() => {
-        updateFormState()
-    })
+        // handle `input` and `change` events differently to improve the UX
+        updateFieldValue(fieldPath, value, {
+            touched: event.type === 'input',
+            dirty: event.type === 'change',
+        })
+    }
 
-    // Automatic error display for ALL error containers in the DOM
-    effect(() => {
-        // Subscribe to any error changes
-        form.errorsChanged()
+    function handleArrayAction(event) {
+        const action = event.target.dataset.arrayAction
+        const arrayPath = event.target.dataset.arrayPath
+        const index = event.target.dataset.arrayIndex
 
-        // Find all error containers and update them
-        const errorContainers = document.querySelectorAll('[data-error]')
-        errorContainers.forEach(container => {
-            const fieldPath = container.getAttribute('data-error')
-            if (fieldPath) {
-                const field = form.field(fieldPath)
-                const errors = field.errors()
-                updateErrorDisplay(fieldPath, errors)
+        if (!action || !arrayPath) return
+
+        switch (action) {
+            case 'add':
+                const newItem = arrayDefaults[arrayPath] || {}
+                formController.arrayAdd(arrayPath, newItem).catch(console.error)
+                break
+
+            case 'remove':
+                if (index !== undefined) {
+                    formController.arrayRemove(arrayPath, parseInt(index)).catch(console.error)
+                }
+                break
+
+            case 'move-up':
+                if (index !== undefined && index > 0) {
+                    formController.arrayMove(arrayPath, parseInt(index), parseInt(index) - 1).catch(console.error)
+                }
+                break
+
+            case 'move-down':
+                if (index !== undefined) {
+                    const array = formController.getValue(arrayPath)
+                    if (Array.isArray(array) && index < array.length - 1) {
+                        formController.arrayMove(arrayPath, parseInt(index), parseInt(index) + 1).catch(console.error)
+                    }
+                }
+                break
+        }
+
+        renderDynamicArrays() 
+    }
+
+    function handleFormSubmit(event) {
+        event.preventDefault()
+
+        if (onSubmit) {
+            onSubmit(formController, formElement)
+        } else {
+            // Default submit behavior
+            formController.submit().then(success => {
+                if (success) {
+                    alert('Form submitted successfully!')
+                    console.log('Form data:', formController.getValues())
+                } else {
+                    alert('Please fix the errors before submitting')
+                }
+            }).catch(console.error)
+        }
+    }
+
+    function handleFormReset(event) {
+        event.preventDefault()
+
+        if (onReset) {
+            onReset(formController, formElement)
+        } else {
+            // Default reset behavior
+            formController.reset()
+        }
+    }
+
+    function handleClick(event) {
+        // Handle array actions
+        if (event.target.dataset.arrayAction) {
+            handleArrayAction(event)
+            return
+        }
+
+        // Handle reset button
+        if (event.target.matches('[data-reset]')) {
+            handleFormReset(event)
+            return
+        }
+    }
+
+    // Dynamic content rendering for arrays
+    function renderDynamicArrays() {
+        const arrayContainers = formElement.querySelectorAll('[data-array-list]')
+
+        arrayContainers.forEach(container => {
+            const arrayPath = container.getAttribute('data-array-list')
+            if (!arrayPath) return
+
+            const items = formController.getValue(arrayPath) || []
+
+            // For contacts array specifically (this could be made more generic)
+            if (arrayPath === 'contacts') {
+                container.innerHTML = items.map((contact, index) => `
+                    <div class="border border-gray-200 rounded-lg p-4 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-medium text-gray-900">Contact ${index + 1}</h4>
+                            <div class="flex gap-2">
+                                <button type="button"
+                                        data-array-action="move-up"
+                                        data-array-path="contacts"
+                                        data-array-index="${index}"
+                                        class="text-blue-600 hover:text-blue-800 text-sm"
+                                        ${index === 0 ? 'disabled' : ''}>↑</button>
+                                <button type="button"
+                                        data-array-action="move-down"
+                                        data-array-path="contacts"
+                                        data-array-index="${index}"
+                                        class="text-blue-600 hover:text-blue-800 text-sm"
+                                        ${index === items.length - 1 ? 'disabled' : ''}>↓</button>
+                                <button type="button"
+                                        data-array-action="remove"
+                                        data-array-path="contacts"
+                                        data-array-index="${index}"
+                                        class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                <input type="text"
+                                       name="contacts.${index}.name"
+                                       value="${contact.name || ''}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <div data-error="contacts.${index}.name"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Email</label>
+                                <input type="email"
+                                       name="contacts.${index}.email"
+                                       value="${contact.email || ''}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <div data-error="contacts.${index}.email"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')
             }
         })
-    })
+    }
 
-    // Data change reactivity for dynamic content (arrays, etc.)
-    effect(() => {
-        form.dataChanged() // Subscribe to data changes
-        renderContactsList()
-    })
+    // Setup event delegation from the form element
+    formElement.addEventListener('input', handleFieldChange)
+    formElement.addEventListener('change', handleFieldChange)
+    formElement.addEventListener('click', handleClick)
+    formElement.addEventListener('submit', handleFormSubmit)
+
+    // Setup automatic reactivity
+    function setupAutoReactivity() {
+        // Form-level state reactivity
+        effect(() => {
+            updateFormState()
+        })
+
+        // Automatic error display for ALL error containers in the form
+        effect(() => {
+            // Subscribe to any error changes
+            formController.errorsChanged()
+
+            // Find all error containers within this form and update them
+            const errorContainers = formElement.querySelectorAll('[data-error]')
+            errorContainers.forEach(container => {
+                const fieldPath = container.getAttribute('data-error')
+                if (fieldPath) {
+                    const field = formController.field(fieldPath)
+                    const errors = field.errors()
+                    updateErrorDisplay(fieldPath, errors)
+                }
+            })
+        })
+
+        // Data change reactivity for dynamic content (arrays, etc.)
+        effect(() => {
+            formController.dataChanged() // Subscribe to data changes
+        })
+    }
+
+    setupAutoReactivity()
+
+    // Initial render
+    renderDynamicArrays()
+    updateFormState()
+
+    // Return cleanup function for potential removal
+    return () => {
+        formElement.removeEventListener('input', handleFieldChange)
+        formElement.removeEventListener('change', handleFieldChange)
+        formElement.removeEventListener('click', handleClick)
+        formElement.removeEventListener('submit', handleFormSubmit)
+    }
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Setup event delegation
-    document.addEventListener('input', handleFieldChange)
-    document.addEventListener('change', handleFieldChange)
-    document.addEventListener('click', handleArrayAction)
+    const formElement = document.querySelector('form')
 
-    // Setup form handlers
-    document.querySelector('form').addEventListener('submit', handleFormSubmit)
-    document.querySelector('[data-reset]').addEventListener('click', handleFormReset)
-
-    // Setup automatic reactivity
-    setupAutoReactivity()
-
-    // Initial render
-    renderContactsList()
-    updateFormState()
+    // Bind the form to the controller with configuration
+    bindFormToController(formElement, form, {
+        arrayDefaults: {
+            contacts: { name: '', email: '' }
+        },
+        onSubmit: (formController, formElement) => {
+            formController.submit().then(success => {
+                if (success) {
+                    alert('Form submitted successfully!')
+                    console.log('Form data:', formController.getValues())
+                } else {
+                    alert('Please fix the errors before submitting')
+                }
+            }).catch(console.error)
+        },
+        onReset: (formController, formElement) => {
+            formController.reset()
+        }
+    })
 })
 ```
 
@@ -471,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </button>
                     </div>
 
-                    <div data-contacts-list class="space-y-4">
+                    <div data-array-list="contacts" class="space-y-4">
                         <!-- Dynamic contact list will be rendered here -->
                     </div>
                 </section>

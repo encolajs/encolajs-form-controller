@@ -1,51 +1,35 @@
 <script setup>
-import { FormController, PlainObjectDataSource } from '../../../src/'
-import { ZodValidatorAdapter } from '../../../zod'
-import { effect } from '../../../'
-import { z } from 'zod'
+import { FormController, PlainObjectDataSource, effect } from '../../../src/'
+import { createEncolaAdapterFromRules } from '../../../encola'
+import { ValidatorFactory } from '@encolajs/validator'
 import {onMounted} from "vue";
 
-// Define comprehensive Zod schema matching the validation docs
-const userSchema = z.object({
-  name: z.string('Field is required')
-      .min(2, 'Name must be at least 2 characters')
-      .max(50, 'Name must be less than 50 characters'),
 
-  email: z.string('Field is required')
-      .email('Please enter a valid email address'),
+// Create validator factory
+const validatorFactory = new ValidatorFactory()
 
-  age: z.number('Field is required')
-      .min(18, 'Must be at least 18 years old')
-      .max(120, 'Please enter a valid age'),
+// Define comprehensive validation rules matching the validation docs
+const userRules = {
+  'name': 'required|min_length:2|max_length:50',
+  'email': 'required|email',
+  'age': 'required|integer|min:18|max:120',
+  'password': 'required|min_length:8|matches:^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])',
+  'confirmPassword': 'required|same_as:@password',
+  'profile.bio': 'max_length:500',
+  'profile.website': 'url',
+  'contacts.*.name': 'required',
+  'contacts.*.email': 'required|email'
+}
 
-  password: z.string('Field is required')
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number'),
+// Define custom error messages
+const customMessages = {
+  'password:matches': 'Password must contain at least one digit, one small letter and on capital letter',
+  'contacts.*.name:required': 'Contact name is required',
+  'contacts.*.email:required': 'Contact email is required',
+}
 
-  confirmPassword: z.string('Field is required'),
+const validator = createEncolaAdapterFromRules(validatorFactory, userRules, customMessages)
 
-  profile: z.object({
-    bio: z.string('Field is required').max(500, 'Bio must be less than 500 characters').optional(),
-    website: z.string('Field is required').url('Please enter a valid URL').optional().or(z.literal(''))
-  }),
-
-  preferences: z.object({
-    newsletter: z.boolean(),
-    notifications: z.boolean()
-  }),
-
-  contacts: z.array(z.object({
-    name: z.string('Field is required').min(1, 'Contact name is required'),
-    email: z.string('Field is required').email('Please enter a valid email address')
-  }))
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"]
-})
-
-const validator = new ZodValidatorAdapter(userSchema)
 
 // We assume the form is pre-populated by the server
 // so we don't need to populate the datasource

@@ -19,7 +19,7 @@ export default defineConfig({
         zod: resolve(__dirname, 'zod.ts'),
         yup: resolve(__dirname, 'yup.ts'),
         valibot: resolve(__dirname, 'valibot.ts'),
-        encola: resolve(__dirname, 'encolajs-validator.ts')
+        encola: resolve(__dirname, 'encola.ts')
       },
       formats: ['es'], // Only ES modules for tree-shaking
       fileName: (format, entryName) => `${entryName}.${format}.js`

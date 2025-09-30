@@ -4,7 +4,7 @@ import VanillaJs from '../.vitepress/examples/VanillaJs.vue'
 
 # Vanilla JavaScript Integration
 
-This example demonstrates a complete form implementation using EncolaJS Form Controller with vanilla JavaScript and Zod validation. The example uses a scalable, path-based approach for handling form fields and error display.
+This example demonstrates a complete form implementation using EncolaJS Form Controller with vanilla JavaScript and EncolaJS Validator. The example uses a scalable, path-based approach for handling form fields and error display.
 
 <ClientOnly>
     <LiveDemo :component="VanillaJs"></LiveDemo>
@@ -23,51 +23,32 @@ This example demonstrates a complete form implementation using EncolaJS Form Con
 ```js [Javascript]
 // Import dependencies (replace with actual CDN URLs or local files)
 import { FormController, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
-import { ZodValidatorAdapter } from '@encolajs/form-controller/zod'
-import { z } from 'zod'
+import { createEncolaAdapterFromRules } from '@encolajs/form-controller/encola'
+import { ValidatorFactory } from '@encolajs/validator'
 
-// Define comprehensive Zod schema matching the validation docs
-const userSchema = z.object({
-    name: z.string()
-        .min(2, 'Name must be at least 2 characters')
-        .max(50, 'Name must be less than 50 characters'),
+// Create validator factory
+const validatorFactory = new ValidatorFactory()
 
-    email: z.string()
-        .email('Please enter a valid email address'),
+const userRules = {
+  'name': 'required|min_length:2|max_length:50',
+  'email': 'required|email',
+  'age': 'required|integer|min:18|max:120',
+  'password': 'required|min_length:8|matches:^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])',
+  'confirmPassword': 'required|same_as:@password',
+  'profile.bio': 'max_length:500',
+  'profile.website': 'url',
+  'contacts.*.name': 'required',
+  'contacts.*.email': 'required|email'
+}
 
-    age: z.number()
-        .min(18, 'Must be at least 18 years old')
-        .max(120, 'Please enter a valid age'),
+// Define custom error messages
+const customMessages = {
+  'password:matches': 'Password must contain at least one digit, one small letter and on capital letter',
+  'contacts.*.name:required': 'Contact name is required',
+  'contacts.*.email:required': 'Contact email is required',
+}
 
-    password: z.string()
-        .min(8, 'Password must be at least 8 characters')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-        .regex(/[0-9]/, 'Password must contain at least one number'),
-
-    confirmPassword: z.string(),
-
-    profile: z.object({
-        bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
-        website: z.string().url('Please enter a valid URL').optional().or(z.literal(''))
-    }),
-
-    preferences: z.object({
-        newsletter: z.boolean(),
-        notifications: z.boolean()
-    }),
-
-    contacts: z.array(z.object({
-        name: z.string().min(1, 'Contact name is required'),
-        email: z.string().email('Please enter a valid email address')
-    }))
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"]
-})
-
-// build the validator
-const validator = new ZodValidatorAdapter(userSchema)
+const validator = createEncolaAdapterFromRules(validatorFactory, userRules, customMessages)
 
 // We assume the form is pre-populated by the server
 // so we don't need to populate the datasource

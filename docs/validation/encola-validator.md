@@ -34,24 +34,8 @@ const userRules = {
 
 // Define custom error messages, if the defaults are not of your liking
 const customMessages = {
-  'name.required': 'Name is required',
-  'name.min_length': 'Name must be at least 2 characters',
-  'name.max_length': 'Name must be less than 50 characters',
-  'email.required': 'Email is required',
-  'email.email': 'Please enter a valid email address',
-  'age.required': 'Age is required',
-  'age.min_value': 'Must be at least 18 years old',
-  'age.max_value': 'Please enter a valid age',
-  'password.required': 'Password is required',
-  'password.min_length': 'Password must be at least 8 characters',
-  'password.regex': 'Password must contain uppercase, lowercase, and number',
-  'confirmPassword.required': 'Please confirm your password',
-  'confirmPassword.same': "Passwords don't match",
-  'profile.bio.max_length': 'Bio must be less than 500 characters',
-  'profile.website.url': 'Please enter a valid URL',
-  'contacts.*.name.required': 'Contact name is required',
-  'contacts.*.email.required': 'Contact email is required',
-  'contacts.*.email.email': 'Please enter a valid email address'
+  'contacts.*.name:required': 'Contact name is required',
+  'contacts.*.email:required': 'Contact email is required',
 }
 
 // Create the schema and validator

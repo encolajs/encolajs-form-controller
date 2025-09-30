@@ -44,7 +44,7 @@
     "build:main": "vite build",
     "build:adapters": "vite build --config vite.config.adapters.ts",
     "dev": "vite build --watch",
-    "test": "vitest",
+    "test": "vitest --run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",

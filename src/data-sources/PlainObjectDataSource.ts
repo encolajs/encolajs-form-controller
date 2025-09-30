@@ -83,6 +83,7 @@ export class PlainObjectDataSource implements DataSource {
       return
     }
 
+    // Move item from fromIndex to toIndex (drag & drop behavior)
     const item = array.splice(fromIndex, 1)[0]
     array.splice(toIndex, 0, item)
   }

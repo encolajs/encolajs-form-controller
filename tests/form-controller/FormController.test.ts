@@ -473,7 +473,7 @@ describe('FormController', () => {
         await formController.setValue('items.2.price', 350, { validate: false })
         await formController.setValue('items.3.quantity', 8, { validate: false })
 
-        // Move item from index 0 to index 3
+        // Move item from index 0 to index 3 (drag & drop behavior)
         formController.arrayMove('items', 0, 3)
 
         // Original items.0 should now be at items.3
@@ -484,15 +484,23 @@ describe('FormController', () => {
         expect(field3Price.value()).toBe(150)
         expect(field3Quantity.value()).toBe(5)
 
-        // Other items should shift accordingly
+        // Original items.1 should now be at items.0 (shifted left)
         const field0Price = formController.field('items.0.price')
-        expect(field0Price.value()).toBe(250) // Original items.1
+        const field0Quantity = formController.field('items.0.quantity')
+        expect(field0Price.value()).toBe(250) // Original items.1 price (shifted left)
+        expect(field0Quantity.value()).toBe(2) // Original items.1 quantity
 
+        // Original items.2 should now be at items.1 (shifted left)
+        const field1Price = formController.field('items.1.price')
+        expect(field1Price.value()).toBe(350) // Original items.2 price was modified to 350
+        expect(field1Price.isDirty()).toBe(true) // Original items.2 price was modified
+
+        // Original items.3 should now be at items.2 (shifted left)
         const field2Price = formController.field('items.2.price')
         const field2Quantity = formController.field('items.2.quantity')
-        expect(field2Price.isDirty()).toBe(false) // Original items.3, quantity was dirty
-        expect(field2Quantity.isDirty()).toBe(true) // Original items.3 quantity
-        expect(field2Quantity.value()).toBe(8)
+        expect(field2Price.value()).toBe(400) // Original items.3 price
+        expect(field2Quantity.value()).toBe(8) // Original items.3 quantity was modified to 8
+        expect(field2Quantity.isDirty()).toBe(true) // Original items.3 quantity was modified
       })
     })
 
@@ -833,7 +841,7 @@ describe('FormController', () => {
       validator.mockFieldValidation('items.1.name', ['Moved Error 1'])
       validator.mockFieldValidation('items.2.name', ['Moved Error 2'])
 
-      // Move item from index 0 to index 2
+      // Move item from index 0 to index 2 (drag & drop behavior)
       await formController.arrayMove('items', 0, 2)
 
       // Check that fields were revalidated at their new positions
@@ -841,9 +849,9 @@ describe('FormController', () => {
       const movedField1 = formController.field('items.1.name')
       const movedField2 = formController.field('items.2.name')
 
-      expect(movedField0.value()).toBe('Item 2')
-      expect(movedField1.value()).toBe('Item 3')
-      expect(movedField2.value()).toBe('Item 1')
+      expect(movedField0.value()).toBe('Item 2') // Item 2 shifted left from index 1
+      expect(movedField1.value()).toBe('Item 3') // Item 3 shifted left from index 2
+      expect(movedField2.value()).toBe('Item 1') // Item 1 moved from index 0 to index 2
 
       expect(movedField0.errors()).toEqual(['Moved Error 0'])
       expect(movedField1.errors()).toEqual(['Moved Error 1'])

@@ -192,6 +192,15 @@ export class FormController implements IFormController {
       this.errors = errors
       this.errorsChanged(this.errorsChanged() + 1)
 
+      // Ensure fields exist for each error
+      Object.keys(errors).forEach((path) => this.field(path))
+
+      // Mark all existing field states as wasValidated since form validation validates everything
+      this.fieldStates.forEach(fieldState => {
+        fieldState.wasValidated(true)
+      })
+
+
       return Object.keys(errors).length === 0
     } catch (error) {
       console.error('[FormController] Error validating form:', error)
@@ -278,13 +287,15 @@ export class FormController implements IFormController {
   async arrayRemove(arrayPath: string, index: number): Promise<void> {
     this.dataSource.arrayRemove(arrayPath, index)
     const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
+
     await removeFieldState(
       this.fieldStates,
       (path) => this.field(path),
       (path) => this.validateField(path),
       arrayPath,
       index,
-      currentArrayLength
+      currentArrayLength,
+      (arrayPath, removeIndex, arrayLength) => this.cleanupArrayErrors(arrayPath, removeIndex, arrayLength)
     )
 
     // Mark array field as dirty
@@ -295,6 +306,9 @@ export class FormController implements IFormController {
   }
 
   async arrayMove(arrayPath: string, fromIndex: number, toIndex: number): Promise<void> {
+    // Clean up all errors for this array to force fresh validation
+    this.cleanupArrayMoveErrors(arrayPath)
+
     this.dataSource.arrayMove(arrayPath, fromIndex, toIndex)
     const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
     await swapFieldStates(
@@ -343,6 +357,63 @@ export class FormController implements IFormController {
 
   // Internal helper methods
 
+  /**
+   * Clean up errors when removing array items
+   */
+  private cleanupArrayErrors(arrayPath: string, removeIndex: number, arrayLength: number): void {
+    const arrayPathPrefix = `${arrayPath}.`
+    const updatedErrors: Record<string, string[]> = {}
+
+    Object.keys(this.errors).forEach(errorPath => {
+      if (errorPath.startsWith(arrayPathPrefix)) {
+        const relativePath = errorPath.substring(arrayPathPrefix.length)
+        const firstDotIndex = relativePath.indexOf('.')
+
+        if (firstDotIndex > 0) {
+          const indexStr = relativePath.substring(0, firstDotIndex)
+          const subPath = relativePath.substring(firstDotIndex + 1)
+          const errorIndex = parseInt(indexStr, 10)
+
+          if (!isNaN(errorIndex)) {
+            if (errorIndex < removeIndex) {
+              // Keep errors for items before the removed index
+              updatedErrors[errorPath] = this.errors[errorPath]
+            } else if (errorIndex > removeIndex) {
+              // Shift errors for items after the removed index down by 1
+              const newPath = `${arrayPath}.${errorIndex - 1}.${subPath}`
+              updatedErrors[newPath] = this.errors[errorPath]
+            }
+            // errorIndex === removeIndex: delete this error (removed item)
+          }
+        }
+      } else {
+        // Keep non-array errors as-is
+        updatedErrors[errorPath] = this.errors[errorPath]
+      }
+    })
+
+    this.errors = updatedErrors
+    this.errorsChanged(this.errorsChanged() + 1)
+  }
+
+  /**
+   * Clean up errors when moving array items (clear all errors for the array to force revalidation)
+   */
+  private cleanupArrayMoveErrors(arrayPath: string): void {
+    const arrayPathPrefix = `${arrayPath}.`
+    const updatedErrors: Record<string, string[]> = {}
+
+    Object.keys(this.errors).forEach(errorPath => {
+      if (!errorPath.startsWith(arrayPathPrefix)) {
+        // Keep non-array errors as-is
+        updatedErrors[errorPath] = this.errors[errorPath]
+      }
+      // Remove all array errors - they will be recreated during revalidation
+    })
+
+    this.errors = updatedErrors
+    this.errorsChanged(this.errorsChanged() + 1)
+  }
 
   /**
    * Set errors for a specific field
@@ -359,6 +430,7 @@ export class FormController implements IFormController {
     this.errors = currentErrors
     this.errorsChanged(this.errorsChanged() + 1)
   }
+
 
 
   /**

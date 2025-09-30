@@ -116,7 +116,8 @@ export async function removeFieldState(
   fieldValidator: (path: string) => Promise<boolean>,
   arrayPath: string,
   removeIndex: number,
-  arrayLength: number
+  arrayLength: number,
+  errorCleanup?: (arrayPath: string, removeIndex: number, arrayLength: number) => void
 ): Promise<void> {
   const arrayFieldStates = getFieldStatesByPath(fieldStates, arrayPath)
   if (arrayFieldStates.length === 0) return
@@ -185,6 +186,11 @@ export async function removeFieldState(
   // Clean up orphaned field states beyond the new array length
   cleanupOrphanedFieldStates(fieldStates, arrayPath, arrayLength)
 
+  // Clean up errors if callback provided
+  if (errorCleanup) {
+    errorCleanup(arrayPath, removeIndex, arrayLength)
+  }
+
   await revalidateFields(fieldsToRevalidate, fieldValidator)
 }
 
@@ -220,7 +226,7 @@ export async function swapFieldStates(
     })
   })
 
-  // Create index mapping for the move operation
+  // Create index mapping for the move operation (drag & drop)
   const indexMapping = new Map<number, number>()
   for (let i = 0; i < arrayLength; i++) {
     indexMapping.set(i, i)
@@ -228,13 +234,13 @@ export async function swapFieldStates(
 
   // Apply the move transformation to the mapping
   if (fromIndex < toIndex) {
-    // Moving forward: shift items back
+    // Moving forward: shift items back to fill the gap
     for (let i = fromIndex + 1; i <= toIndex; i++) {
       indexMapping.set(i, i - 1)
     }
     indexMapping.set(fromIndex, toIndex)
   } else {
-    // Moving backward: shift items forward
+    // Moving backward: shift items forward to make room
     for (let i = toIndex; i < fromIndex; i++) {
       indexMapping.set(i, i + 1)
     }

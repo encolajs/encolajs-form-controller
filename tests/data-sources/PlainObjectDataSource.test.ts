@@ -253,6 +253,36 @@ describe('PlainObjectDataSource', () => {
       it('should handle non-existent array path gracefully', () => {
         expect(() => dataSource.arrayMove('nonExistent', 0, 1)).not.toThrow()
       })
+
+      it('should correctly move item from index 1 to index 4 in a 5-item array', () => {
+        // Set up a 5-item array with distinct values
+        dataSource.set('testArray', [
+          { name: 'Item 0' },
+          { name: 'Item 1' },
+          { name: 'Item 2' },
+          { name: 'Item 3' },
+          { name: 'Item 4' }
+        ])
+
+        // Verify initial state
+        expect(dataSource.get('testArray.0.name')).toBe('Item 0')
+        expect(dataSource.get('testArray.1.name')).toBe('Item 1')
+        expect(dataSource.get('testArray.2.name')).toBe('Item 2')
+        expect(dataSource.get('testArray.3.name')).toBe('Item 3')
+        expect(dataSource.get('testArray.4.name')).toBe('Item 4')
+
+        // Move item from index 1 to index 4 (drag & drop behavior)
+        dataSource.arrayMove('testArray', 1, 4)
+
+        // Verify the result
+        const result = dataSource.get('testArray') as any[]
+        expect(result).toHaveLength(5)
+        expect(result[0].name).toBe('Item 0') // Unchanged
+        expect(result[1].name).toBe('Item 2') // Item 2 shifted left to fill gap
+        expect(result[2].name).toBe('Item 3') // Item 3 shifted left to fill gap
+        expect(result[3].name).toBe('Item 4') // Item 4 shifted left to fill gap
+        expect(result[4].name).toBe('Item 1') // Item 1 moved to index 4
+      })
     })
   })
 

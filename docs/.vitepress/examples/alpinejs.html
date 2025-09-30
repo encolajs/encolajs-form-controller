@@ -1,0 +1,277 @@
+  <div class="bg-gray-100 min-h-screen p-4">
+    <div class="mb-8">
+      <form class="space-y-8"
+              x-data="encolaForm({
+                    values: {
+                      name: '',
+                      email: '',
+                      age: 18,
+                      password: '',
+                      confirmPassword: '',
+                      profile: {
+                        bio: '',
+                        website: ''
+                      },
+                      preferences: {
+                        newsletter: false,
+                        notifications: true
+                      },
+                      contacts: [
+                        {name: 'John Doe'}
+                      ]
+                    },
+                    rules: {
+                      'name': 'required|min_length:2|max_length:50',
+                      'email': 'required|email',
+                      'age': 'required|integer|gte:18|lte:120',
+                      'password': 'required|min_length:8|matches:^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])',
+                      'confirmPassword': 'required|same_as:@password',
+                      'profile.bio': 'max_length:500',
+                      'profile.website': 'url',
+                      'contacts.*.name': 'required',
+                      'contacts.*.email': 'required|email'
+                    },
+                    messages: {
+                      'password:matches': 'Password must contain at least one digit, one small letter and on capital letter',
+                      'contacts.*.name:required': 'Contact name is required',
+                      'contacts.*.email:required': 'Contact email is required',
+                    },
+                    arrayDefaults: {
+                      contacts: { name: '', email: '' }
+                    }
+                  })"
+              x-on:submit="submitForm">
+            <!-- Basic Information -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input type="text"
+                               id="name"
+                               name="name"
+                               x-model="formValues.name"
+                               x-on:input="handleInput"
+                               x-on:change="handleChange"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter your full name">
+                        <div x-show="hasFieldErrors('name')" class="text-red-500 text-sm mt-1">
+                            <div x-text="getFieldErrors('name')[0]"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               x-model="formValues.email"
+                               x-on:input="handleInput"
+                               x-on:change="handleChange"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter your email">
+                        <div x-show="hasFieldErrors('email')" class="text-red-500 text-sm mt-1">
+                            <div x-text="getFieldErrors('email')[0]"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
+                        <input type="number"
+                               id="age"
+                               name="age"
+                               x-model="formValues.age"
+                               x-on:input="handleInput"
+                               x-on:change="handleChange"
+                               min="18"
+                               max="120"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <div x-show="hasFieldErrors('age')" class="text-red-500 text-sm mt-1">
+                            <div x-text="getFieldErrors('age')[0]"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Security</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password"
+                               id="password"
+                               name="password"
+                               x-model="formValues.password"
+                               x-on:input="handleInput"
+                               x-on:change="handleChange"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Create a secure password">
+                        <div x-show="hasFieldErrors('password')" class="text-red-500 text-sm mt-1">
+                            <div x-text="getFieldErrors('password')[0]"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <input type="password"
+                               id="confirmPassword"
+                               name="confirmPassword"
+                               x-model="formValues.confirmPassword"
+                               x-on:input="handleInput"
+                               x-on:change="handleChange"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Confirm your password">
+                        <div x-show="hasFieldErrors('confirmPassword')" class="text-red-500 text-sm mt-1">
+                            <div x-text="getFieldErrors('confirmPassword')[0]"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Information -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Profile Information</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="bio" class="block text-sm font-medium text-gray-700">Bio</label>
+                        <textarea id="bio"
+                                  name="profile.bio"
+                                  x-model="formValues.profile.bio"
+                                  x-on:input="handleInput"
+                                  x-on:change="handleChange"
+                                  rows="3"
+                                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="Tell us about yourself (optional)"></textarea>
+                        <div x-show="hasFieldErrors('profile.bio')" class="text-red-500 text-sm mt-1">
+                            <div x-text="getFieldErrors('profile.bio')[0]"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="website" class="block text-sm font-medium text-gray-700">Website</label>
+                        <input type="url"
+                               id="website"
+                               name="profile.website"
+                               x-model="formValues.profile.website"
+                               x-on:input="handleInput"
+                               x-on:change="handleChange"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="https://yourwebsite.com (optional)">
+                        <div x-show="hasFieldErrors('profile.website')" class="text-red-500 text-sm mt-1">
+                            <div x-text="getFieldErrors('profile.website')[0]"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preferences -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Preferences</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <input type="checkbox"
+                               id="newsletter"
+                               name="preferences.newsletter"
+                               x-model="formValues.preferences.newsletter"
+                               x-on:change="handleChange"
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="newsletter" class="ml-2 block text-sm text-gray-900">
+                            Subscribe to newsletter
+                        </label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox"
+                               id="notifications"
+                               name="preferences.notifications"
+                               x-model="formValues.preferences.notifications"
+                               x-on:change="handleChange"
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="notifications" class="ml-2 block text-sm text-gray-900">
+                            Enable notifications
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contacts Array -->
+            <section>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Emergency Contacts</h2>
+                    <button type="button"
+                            x-on:click="arrayAdd('contacts')"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                        Add Contact
+                    </button>
+                </div>
+
+                <template x-if="formValues" class="space-y-4">
+                    <template x-for="(contact, index) in formValues.contacts" x-bind:key="`contact-${index}`" >
+                        <div class="border border-gray-200 rounded-lg p-4 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-gray-900" x-text="`Contact ${index + 1}`"></h4>
+                                <div class="flex gap-2">
+                                    <button type="button"
+                                           x-on:click="arrayMoveUp('contacts', index)"
+                                            x-bind:disabled="index === 0"
+                                            class="text-blue-600 hover:text-blue-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed">↑</button>
+                                    <button type="button"
+                                           x-on:click="arrayMoveDown('contacts', index)"
+                                            x-bind:disabled="index === (formValues.contacts?.length || 0) - 1"
+                                            class="text-blue-600 hover:text-blue-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed">↓</button>
+                                    <button type="button"
+                                           x-on:click="arrayRemove('contacts', index)"
+                                            class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                                    <input type="text"
+                                           x-bind:name="`contacts.${index}.name`"
+                                           x-model="contact.name"
+                                           x-on:input="handleInput"
+                                           x-on:change="handleChange"
+                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <div x-show="hasFieldErrors(`contacts.${index}.name`)" class="text-red-500 text-sm mt-1">
+                                        <div x-text="getFieldErrors(`contacts.${index}.name`)[0]"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email"
+                                           x-bind:name="`contacts.${index}.email`"
+                                           x-model="contact.email"
+                                           x-on:input="handleInput"
+                                           x-on:change="handleChange"
+                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <div x-show="hasFieldErrors(`contacts.${index}.email`)" class="text-red-500 text-sm mt-1">
+                                        <div x-text="getFieldErrors(`contacts.${index}.email`)[0]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </section>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between pt-6 border-t border-gray-200">
+                <button type="button"
+                       x-on:click="resetForm"
+                        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md">
+                    Reset Form
+                </button>
+
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+                    Create Account
+                </button>
+            </div>
+        </form>
+
+    </div>
+  </div>

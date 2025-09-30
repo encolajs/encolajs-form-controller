@@ -12,7 +12,7 @@
     "vitepress": "^1.6.3"
   },
   "dependencies": {
-    "markdown-it-container": "^4.0.0",
-    "alpinejs": "^3.15.0"
+    "alpinejs": "^3.15.0",
+    "markdown-it-container": "^4.0.0"
   }
 }

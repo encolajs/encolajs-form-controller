@@ -363,12 +363,12 @@ onMounted(() => {
   <div class="bg-gray-100 min-h-screen p-4">
     <div class="mb-8">
     <!-- Form State Indicators -->
-    <div class="mt-4 flex gap-4 text-sm">
-      <span>Status: <span data-form-dirty class="font-medium">No Changes</span></span>
-      <span>Touched: <span data-form-touched class="font-medium">Untouched</span></span>
-      <span>Valid: <span data-form-valid class="font-medium">Invalid</span></span>
+      <div class="mt-4 flex gap-4 text-sm">
+        <span>Status: <span data-form-dirty class="font-medium">No Changes</span></span>
+        <span>Touched: <span data-form-touched class="font-medium">Untouched</span></span>
+        <span>Valid: <span data-form-valid class="font-medium">Invalid</span></span>
+      </div>
     </div>
-  </div>
 
     <form id="form" class="space-y-8">
     <!-- Basic Information -->

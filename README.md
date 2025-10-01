@@ -1,6 +1,11 @@
 # @encolajs/form-controller
 
-Framework-agnostic form state management using alien-signals for reactivity.
+Framework-agnostic form state management using `alien-signals` for reactivity.
+
+![CI](https://github.com/encolajs/encolajs-form-controller/workflows/CI/badge.svg)
+[![npm version](https://badge.fury.io/js/@encolajs%2Fform-controller.svg)](https://badge.fury.io/js/@encolajs%2Fvalidator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 
 ## Features
 

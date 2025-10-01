@@ -598,6 +598,6 @@ The form submission logic is already included in the Vue example above. Here are
 
 Congratulations! You've built a complete form with validation. Here are some next steps:
 
-- [Advanced Usage](/advanced.md) - Learn about complex validation scenarios
-- [API Reference](/api-reference.md) - Explore all available methods and options
-- [Examples](/examples.md) - See more real-world examples
+- [API Reference](/form-controller-api.md) - Detailed API documentation
+- [Validation](/validation/) - Validation adapters for Zod, Yup, Valibot and Encola Validator
+- [UI Integration](/ui-integration/) - Integration with various UI libraries and vanilla JS

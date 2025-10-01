@@ -128,5 +128,6 @@ const emailField = form.field('user.contact.email')
 ## Next Steps
 
 - [Quick Start](/quick-start.md) - Build a complete form example
-- [API Reference](/api-reference.md) - Detailed API documentation
+- [API Reference](/form-controller-api.md) - Detailed API documentation
+- [Validation](/validation/) - Validation adapters for Zod, Yup, Valibot and Encola Validator
 - [UI Integration](/ui-integration/) - Integration with various UI libraries and vanilla JS

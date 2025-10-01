@@ -9,8 +9,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
-        'node_modules/',
-        'dist/',
+        '**/node_modules/**',
+        '**/dist/',
+        '**/docs/',
+        '**/tests/',
         '**/*.d.ts',
         '**/*.config.*',
         '**/index.ts' // exclude barrel exports from coverage

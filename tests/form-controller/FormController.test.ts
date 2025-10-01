@@ -401,7 +401,9 @@ describe('FormController', () => {
       it('should shift field states when removing from middle', async () => {
         // Add a third item with dirty state first
         const originalField2Price = formController.field('items.2.price') // Create field state first
-        await formController.setValue('items.2.price', 350, { validate: false })
+        await formController.setValue('items.2.price', 350, {
+          validate: false,
+        })
         const newItem = { price: 999, quantity: 9 }
         formController.arrayAdd('items', newItem)
 
@@ -475,7 +477,9 @@ describe('FormController', () => {
         // Create field states first, then set values
         formController.field('items.2.price')
         formController.field('items.3.quantity')
-        await formController.setValue('items.2.price', 350, { validate: false })
+        await formController.setValue('items.2.price', 350, {
+          validate: false,
+        })
         await formController.setValue('items.3.quantity', 8, {
           validate: false,
         })

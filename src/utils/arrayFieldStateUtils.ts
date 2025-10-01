@@ -78,7 +78,7 @@ export async function insertFieldState(
         isDirty: fieldState.isDirty(),
         isTouched: fieldState.isTouched(),
         isValidating: fieldState.isValidating(),
-        wasValidated
+        wasValidated,
       })
 
       // If field was validated, we need to revalidate it at the new path
@@ -133,7 +133,7 @@ export async function removeFieldState(
       isDirty: fieldState.isDirty(),
       isTouched: fieldState.isTouched(),
       isValidating: fieldState.isValidating(),
-      wasValidated: fieldState.wasValidated()
+      wasValidated: fieldState.wasValidated(),
     }
 
     if (index < removeIndex) {
@@ -222,7 +222,7 @@ export async function swapFieldStates(
       isDirty: fieldState.isDirty(),
       isTouched: fieldState.isTouched(),
       isValidating: fieldState.isValidating(),
-      wasValidated: fieldState.wasValidated()
+      wasValidated: fieldState.wasValidated(),
     })
   })
 
@@ -279,9 +279,9 @@ export async function swapFieldStates(
 }
 
 async function revalidateFields(
-    paths: string[],
-    fieldValidator: (path: string) => Promise<boolean>): Promise<boolean[]> {
-
+  paths: string[],
+  fieldValidator: (path: string) => Promise<boolean>
+): Promise<boolean[]> {
   return Promise.all(paths.map(fieldValidator))
 }
 
@@ -317,7 +317,7 @@ function cleanupOrphanedFieldStates(
   })
 
   // Remove orphaned field states from the map
-  toDelete.forEach(path => {
+  toDelete.forEach((path) => {
     fieldStates.delete(path)
   })
 }

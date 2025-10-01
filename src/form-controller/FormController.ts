@@ -6,17 +6,20 @@ import type {
   IFormController,
   FormSetValueOptions,
   Signal,
-  ISignal
+  ISignal,
 } from '../types'
 import { PlainObjectDataSource } from '@/data-sources'
 import { NoopValidator } from '@/validators'
 import {
   insertFieldState,
   removeFieldState,
-  swapFieldStates
+  swapFieldStates,
 } from '../utils/arrayFieldStateUtils'
 
-function createFieldState(formController: FormController, path: string): IFieldState {
+function createFieldState(
+  formController: FormController,
+  path: string
+): IFieldState {
   // Individual field state signals
   const isDirty = signal(false)
   const isTouched = signal(false)
@@ -46,10 +49,9 @@ function createFieldState(formController: FormController, path: string): IFieldS
     isValidating,
     wasValidated,
     errors,
-    isValid
+    isValid,
   }
 }
-
 
 export class FormController implements IFormController {
   // Form-level reactive state
@@ -86,12 +88,16 @@ export class FormController implements IFormController {
     // Computed form-level state from field states
     this.isDirty = computed(() => {
       this.fieldStatesSize() // Subscribe to field states map changes
-      return Array.from(this.fieldStates.values()).some(field => field.isDirty())
+      return Array.from(this.fieldStates.values()).some((field) =>
+        field.isDirty()
+      )
     }) as ISignal<boolean>
 
     this.isTouched = computed(() => {
       this.fieldStatesSize() // Subscribe to field states map changes
-      return Array.from(this.fieldStates.values()).some(field => field.isTouched())
+      return Array.from(this.fieldStates.values()).some((field) =>
+        field.isTouched()
+      )
     }) as ISignal<boolean>
 
     // Computed form validity
@@ -116,12 +122,12 @@ export class FormController implements IFormController {
     return this.dataSource.get(path)
   }
 
-  async setValue(path: string, value: unknown, options: FormSetValueOptions = {}): Promise<void> {
-    const {
-      validate,
-      touch = true,
-      dirty = true
-    } = options
+  async setValue(
+    path: string,
+    value: unknown,
+    options: FormSetValueOptions = {}
+  ): Promise<void> {
+    const { validate, touch = true, dirty = true } = options
 
     // Update the data source
     this.dataSource.set(path, value)
@@ -141,10 +147,10 @@ export class FormController implements IFormController {
       fieldState.isTouched(true)
     }
 
-
     // Determine if validation should be triggered
     // Priority: explicit validate option > dirty=true triggers validation
-    const shouldValidate = fieldState.wasValidated() || (validate !== undefined ? validate : dirty)
+    const shouldValidate =
+      fieldState.wasValidated() || (validate !== undefined ? validate : dirty)
 
     if (shouldValidate) {
       await this.validateField(path)
@@ -196,10 +202,9 @@ export class FormController implements IFormController {
       Object.keys(errors).forEach((path) => this.field(path))
 
       // Mark all existing field states as wasValidated since form validation validates everything
-      this.fieldStates.forEach(fieldState => {
+      this.fieldStates.forEach((fieldState) => {
         fieldState.wasValidated(true)
       })
-
 
       return Object.keys(errors).length === 0
     } catch (error) {
@@ -242,7 +247,7 @@ export class FormController implements IFormController {
     this.errorsChanged(this.errorsChanged() + 1)
 
     // Reset all field states
-    this.fieldStates.forEach(fieldState => {
+    this.fieldStates.forEach((fieldState) => {
       fieldState.isDirty(false)
       fieldState.isTouched(false)
       fieldState.isValidating(false)
@@ -263,7 +268,11 @@ export class FormController implements IFormController {
   }
 
   // Array operations
-  async arrayAdd(arrayPath: string, item: unknown, index?: number): Promise<void> {
+  async arrayAdd(
+    arrayPath: string,
+    item: unknown,
+    index?: number
+  ): Promise<void> {
     if (index !== undefined) {
       this.dataSource.arrayInsert(arrayPath, index, item)
       await insertFieldState(
@@ -286,7 +295,8 @@ export class FormController implements IFormController {
 
   async arrayRemove(arrayPath: string, index: number): Promise<void> {
     this.dataSource.arrayRemove(arrayPath, index)
-    const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
+    const currentArrayLength =
+      (this.dataSource.get(arrayPath) as unknown[])?.length || 0
 
     await removeFieldState(
       this.fieldStates,
@@ -295,7 +305,8 @@ export class FormController implements IFormController {
       arrayPath,
       index,
       currentArrayLength,
-      (arrayPath, removeIndex) => this.cleanupArrayErrors(arrayPath, removeIndex)
+      (arrayPath, removeIndex) =>
+        this.cleanupArrayErrors(arrayPath, removeIndex)
     )
 
     // Mark array field as dirty
@@ -305,12 +316,17 @@ export class FormController implements IFormController {
     this.triggerDataUpdate()
   }
 
-  async arrayMove(arrayPath: string, fromIndex: number, toIndex: number): Promise<void> {
+  async arrayMove(
+    arrayPath: string,
+    fromIndex: number,
+    toIndex: number
+  ): Promise<void> {
     // Clean up all errors for this array to force fresh validation
     this.cleanupArrayMoveErrors(arrayPath)
 
     this.dataSource.arrayMove(arrayPath, fromIndex, toIndex)
-    const currentArrayLength = (this.dataSource.get(arrayPath) as unknown[])?.length || 0
+    const currentArrayLength =
+      (this.dataSource.get(arrayPath) as unknown[])?.length || 0
     await swapFieldStates(
       this.fieldStates,
       (path) => this.field(path),
@@ -333,7 +349,7 @@ export class FormController implements IFormController {
     const updatedErrors = { ...this.errors }
 
     // Update/remove errors for specified fields
-    Object.keys(errors).forEach(path => {
+    Object.keys(errors).forEach((path) => {
       if (errors[path].length > 0) {
         updatedErrors[path] = errors[path]
       } else {
@@ -345,7 +361,7 @@ export class FormController implements IFormController {
     this.errorsChanged(this.errorsChanged() + 1)
 
     // Mark affected fields as touched
-    Object.keys(errors).forEach(path => {
+    Object.keys(errors).forEach((path) => {
       const fieldState = this.fieldStates.get(path)
       if (fieldState) {
         fieldState.isTouched(true)
@@ -364,7 +380,7 @@ export class FormController implements IFormController {
     const arrayPathPrefix = `${arrayPath}.`
     const updatedErrors: Record<string, string[]> = {}
 
-    Object.keys(this.errors).forEach(errorPath => {
+    Object.keys(this.errors).forEach((errorPath) => {
       if (errorPath.startsWith(arrayPathPrefix)) {
         const relativePath = errorPath.substring(arrayPathPrefix.length)
         const firstDotIndex = relativePath.indexOf('.')
@@ -403,7 +419,7 @@ export class FormController implements IFormController {
     const arrayPathPrefix = `${arrayPath}.`
     const updatedErrors: Record<string, string[]> = {}
 
-    Object.keys(this.errors).forEach(errorPath => {
+    Object.keys(this.errors).forEach((errorPath) => {
       if (!errorPath.startsWith(arrayPathPrefix)) {
         // Keep non-array errors as-is
         updatedErrors[errorPath] = this.errors[errorPath]
@@ -431,14 +447,10 @@ export class FormController implements IFormController {
     this.errorsChanged(this.errorsChanged() + 1)
   }
 
-
-
   /**
    * Trigger data update (to notify computed values)
    */
   triggerDataUpdate(): void {
     this.dataChanged(this.dataChanged() + 1)
   }
-
-
 }

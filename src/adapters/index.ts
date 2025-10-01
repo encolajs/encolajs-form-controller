@@ -12,4 +12,7 @@
 
 export { ZodValidatorAdapter, createZodAdapter } from './ZodValidatorAdapter'
 export { YupValidatorAdapter, createYupAdapter } from './YupValidatorAdapter'
-export { ValibotValidatorAdapter, createValibotAdapter } from './ValibotValidatorAdapter'
+export {
+  ValibotValidatorAdapter,
+  createValibotAdapter,
+} from './ValibotValidatorAdapter'

@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import * as yup from 'yup'
-import { YupValidatorAdapter, createYupAdapter } from '../../src/adapters/YupValidatorAdapter'
+import {
+  YupValidatorAdapter,
+  createYupAdapter,
+} from '../../src/adapters/YupValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
 describe('YupValidatorAdapter', () => {
@@ -9,13 +12,19 @@ describe('YupValidatorAdapter', () => {
 
   const userSchema = yup.object({
     name: yup.string().min(1, 'Name is required').required('Name is required'),
-    email: yup.string().email('Invalid email format').required('Email is required'),
-    age: yup.number().min(18, 'Must be at least 18').required('Age is required'),
+    email: yup
+      .string()
+      .email('Invalid email format')
+      .required('Email is required'),
+    age: yup
+      .number()
+      .min(18, 'Must be at least 18')
+      .required('Age is required'),
     profile: yup.object({
       bio: yup.string(),
-      website: yup.string().url('Invalid URL')
+      website: yup.string().url('Invalid URL'),
     }),
-    tags: yup.array(yup.string())
+    tags: yup.array(yup.string()),
   })
 
   beforeEach(() => {
@@ -26,9 +35,9 @@ describe('YupValidatorAdapter', () => {
       age: 25,
       profile: {
         bio: 'Software developer',
-        website: 'https://johndoe.com'
+        website: 'https://johndoe.com',
       },
-      tags: ['javascript', 'typescript']
+      tags: ['javascript', 'typescript'],
     })
   })
 
@@ -149,7 +158,7 @@ describe('YupValidatorAdapter', () => {
       expect(errors).toEqual({
         name: ['Name is required'],
         email: ['Invalid email format'],
-        age: ['Must be at least 18']
+        age: ['Must be at least 18'],
       })
       expect(adapter.isValid()).toBe(false)
     })
@@ -159,7 +168,7 @@ describe('YupValidatorAdapter', () => {
 
       const errors = await adapter.validate(dataSource)
       expect(errors).toEqual({
-        'profile.website': ['Invalid URL']
+        'profile.website': ['Invalid URL'],
       })
     })
 
@@ -190,7 +199,7 @@ describe('YupValidatorAdapter', () => {
 
       expect(adapter.getAllErrors()).toEqual({
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       })
     })
 
@@ -228,7 +237,7 @@ describe('YupValidatorAdapter', () => {
     it('should set multiple errors', () => {
       const errors = {
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       }
 
       adapter.setErrors(errors)
@@ -257,13 +266,22 @@ describe('YupValidatorAdapter', () => {
         user: yup.object({
           name: yup.string().min(1, 'Name required').required('Name required'),
           contacts: yup.object({
-            email: yup.string().email('Invalid email').required('Email required'),
-            phone: yup.string().min(10, 'Phone too short').required('Phone required')
-          })
+            email: yup
+              .string()
+              .email('Invalid email')
+              .required('Email required'),
+            phone: yup
+              .string()
+              .min(10, 'Phone too short')
+              .required('Phone required'),
+          }),
         }),
         settings: yup.object({
-          theme: yup.string().oneOf(['light', 'dark'], 'Invalid theme').required('Theme required')
-        })
+          theme: yup
+            .string()
+            .oneOf(['light', 'dark'], 'Invalid theme')
+            .required('Theme required'),
+        }),
       })
 
       const complexAdapter = new YupValidatorAdapter(complexSchema)
@@ -272,12 +290,12 @@ describe('YupValidatorAdapter', () => {
           name: '',
           contacts: {
             email: 'invalid',
-            phone: '123'
-          }
+            phone: '123',
+          },
         },
         settings: {
-          theme: 'blue'
-        }
+          theme: 'blue',
+        },
       })
 
       const errors = await complexAdapter.validate(complexDataSource)
@@ -291,20 +309,23 @@ describe('YupValidatorAdapter', () => {
       const complexSchema = yup.object({
         user: yup.object({
           name: yup.string().min(1, 'Name required').required('Name required'),
-          email: yup.string().email('Invalid email').required('Email required')
-        })
+          email: yup.string().email('Invalid email').required('Email required'),
+        }),
       })
 
       const complexAdapter = new YupValidatorAdapter(complexSchema)
       const complexDataSource = new PlainObjectDataSource({
         user: {
           name: '',
-          email: 'valid@example.com'
-        }
+          email: 'valid@example.com',
+        },
       })
 
       // Validate only the name field - should only return name errors
-      const nameErrors = await complexAdapter.validateField('user.name', complexDataSource)
+      const nameErrors = await complexAdapter.validateField(
+        'user.name',
+        complexDataSource
+      )
       expect(nameErrors).toEqual(['Name required'])
 
       // Email field should not have errors in the adapter state
@@ -313,13 +334,16 @@ describe('YupValidatorAdapter', () => {
 
     it('should handle optional fields correctly', async () => {
       const optionalSchema = yup.object({
-        required: yup.string().min(1, 'Required field').required('Required field'),
-        optional: yup.string()
+        required: yup
+          .string()
+          .min(1, 'Required field')
+          .required('Required field'),
+        optional: yup.string(),
       })
 
       const optionalAdapter = new YupValidatorAdapter(optionalSchema)
       const optionalDataSource = new PlainObjectDataSource({
-        required: 'valid'
+        required: 'valid',
         // optional field is missing
       })
 
@@ -329,18 +353,26 @@ describe('YupValidatorAdapter', () => {
 
     it('should handle array validation with element errors', async () => {
       const arraySchema = yup.object({
-        items: yup.array(yup.object({
-          name: yup.string().min(1, 'Item name required').required('Item name required'),
-          value: yup.number().positive('Value must be positive').required('Value required')
-        }))
+        items: yup.array(
+          yup.object({
+            name: yup
+              .string()
+              .min(1, 'Item name required')
+              .required('Item name required'),
+            value: yup
+              .number()
+              .positive('Value must be positive')
+              .required('Value required'),
+          })
+        ),
       })
 
       const arrayAdapter = new YupValidatorAdapter(arraySchema)
       const arrayDataSource = new PlainObjectDataSource({
         items: [
           { name: 'valid', value: 5 },
-          { name: '', value: -1 }
-        ]
+          { name: '', value: -1 },
+        ],
       })
 
       const errors = await arrayAdapter.validate(arrayDataSource)
@@ -350,7 +382,7 @@ describe('YupValidatorAdapter', () => {
 
     it('should handle required field validation', async () => {
       const requiredSchema = yup.object({
-        requiredField: yup.string().required('This field is required')
+        requiredField: yup.string().required('This field is required'),
       })
 
       const requiredAdapter = new YupValidatorAdapter(requiredSchema)
@@ -362,25 +394,37 @@ describe('YupValidatorAdapter', () => {
 
     it('should handle field-specific validation with custom messages', async () => {
       const customSchema = yup.object({
-        username: yup.string()
+        username: yup
+          .string()
           .min(3, 'Username must be at least 3 characters')
           .max(20, 'Username must be less than 20 characters')
-          .matches(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores')
-          .required('Username is required')
+          .matches(
+            /^[a-zA-Z0-9_]+$/,
+            'Username can only contain letters, numbers, and underscores'
+          )
+          .required('Username is required'),
       })
 
       const customAdapter = new YupValidatorAdapter(customSchema)
       const testDataSource = new PlainObjectDataSource({
-        username: 'ab'
+        username: 'ab',
       })
 
-      const errors = await customAdapter.validateField('username', testDataSource)
+      const errors = await customAdapter.validateField(
+        'username',
+        testDataSource
+      )
       expect(errors).toEqual(['Username must be at least 3 characters'])
 
       // Test with invalid characters
       testDataSource.set('username', 'abc-def!')
-      const errors2 = await customAdapter.validateField('username', testDataSource)
-      expect(errors2).toEqual(['Username can only contain letters, numbers, and underscores'])
+      const errors2 = await customAdapter.validateField(
+        'username',
+        testDataSource
+      )
+      expect(errors2).toEqual([
+        'Username can only contain letters, numbers, and underscores',
+      ])
     })
   })
 })

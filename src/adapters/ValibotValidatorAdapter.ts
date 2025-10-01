@@ -52,16 +52,20 @@ export class ValibotValidatorAdapter implements FormValidator {
           result = v.safeParse(this.schema, data)
         } else {
           // This will be filled in by tests or real usage
-          throw new Error('Valibot not available - please ensure valibot library is properly imported')
+          throw new Error(
+            'Valibot not available - please ensure valibot library is properly imported'
+          )
         }
       } catch (error: any) {
         // Handle parse errors
         result = {
           success: false,
-          issues: error.issues || [{
-            message: error.message || 'Validation failed',
-            path: []
-          }]
+          issues: error.issues || [
+            {
+              message: error.message || 'Validation failed',
+              path: [],
+            },
+          ],
         }
       }
 
@@ -102,16 +106,20 @@ export class ValibotValidatorAdapter implements FormValidator {
           result = v.safeParse(this.schema, data)
         } else {
           // This will be filled in by tests or real usage
-          throw new Error('Valibot not available - please ensure valibot library is properly imported')
+          throw new Error(
+            'Valibot not available - please ensure valibot library is properly imported'
+          )
         }
       } catch (error: any) {
         // Handle parse errors
         result = {
           success: false,
-          issues: error.issues || [{
-            message: error.message || 'Validation failed',
-            path: []
-          }]
+          issues: error.issues || [
+            {
+              message: error.message || 'Validation failed',
+              path: [],
+            },
+          ],
         }
       }
 
@@ -206,6 +214,8 @@ export class ValibotValidatorAdapter implements FormValidator {
 /**
  * Factory function for creating Valibot adapter
  */
-export function createValibotAdapter(schema?: ValibotSchema): ValibotValidatorAdapter {
+export function createValibotAdapter(
+  schema?: ValibotSchema
+): ValibotValidatorAdapter {
   return new ValibotValidatorAdapter(schema)
 }

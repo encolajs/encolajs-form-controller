@@ -147,7 +147,11 @@ export interface IFormController {
   getValue(path: string): unknown
 
   /** Set field value by path */
-  setValue(path: string, value: unknown, options?: FormSetValueOptions): Promise<void>
+  setValue(
+    path: string,
+    value: unknown,
+    options?: FormSetValueOptions
+  ): Promise<void>
 
   /** Validate specific field */
   validateField(path: string): Promise<boolean>
@@ -177,7 +181,11 @@ export interface IFormController {
   arrayRemove(arrayPath: string, index: number): Promise<void>
 
   /** Move item within array field */
-  arrayMove(arrayPath: string, fromIndex: number, toIndex: number): Promise<void>
+  arrayMove(
+    arrayPath: string,
+    fromIndex: number,
+    toIndex: number
+  ): Promise<void>
 
   /** Set form-level errors */
   setErrors(errors: Record<string, string[]>): void

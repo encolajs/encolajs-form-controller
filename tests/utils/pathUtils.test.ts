@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { getByPath, setByPath, hasPath, removeByPath, createPath } from '../../src/utils/pathUtils'
+import {
+  getByPath,
+  setByPath,
+  hasPath,
+  removeByPath,
+  createPath,
+} from '../../src/utils/pathUtils'
 
 describe('pathUtils', () => {
   const testObject = {
@@ -10,21 +16,21 @@ describe('pathUtils', () => {
       city: 'LA',
       coordinates: {
         lat: 34.0522,
-        lng: -118.2437
-      }
+        lng: -118.2437,
+      },
     },
     items: [
       { id: 1, price: 100 },
       { id: 2, price: 200 },
-      { id: 3, price: 300 }
+      { id: 3, price: 300 },
     ],
     tags: ['developer', 'vue', 'javascript'],
     settings: {
       notifications: {
         email: true,
-        sms: false
-      }
-    }
+        sms: false,
+      },
+    },
   }
 
   describe('getByPath', () => {
@@ -150,7 +156,10 @@ describe('pathUtils', () => {
     })
 
     it('should distinguish between undefined values and non-existent paths', () => {
-      const objWithUndefined = { value: undefined, nested: { value: undefined } }
+      const objWithUndefined = {
+        value: undefined,
+        nested: { value: undefined },
+      }
       expect(hasPath(objWithUndefined, 'value')).toBe(true)
       expect(hasPath(objWithUndefined, 'nested.value')).toBe(true)
       expect(hasPath(objWithUndefined, 'nonExistent')).toBe(false)
@@ -249,9 +258,9 @@ describe('pathUtils', () => {
     it('should handle special characters in property names', () => {
       const obj = {
         'field-name': 'value1',
-        'field_name': 'value2',
+        field_name: 'value2',
         'field name': 'value3',
-        'field.name': 'value4'
+        'field.name': 'value4',
       }
 
       expect(getByPath(obj, 'field-name')).toBe('value1')
@@ -273,7 +282,7 @@ describe('pathUtils', () => {
         array: [1, 2, 3],
         object: { nested: true },
         nullValue: null,
-        undefinedValue: undefined
+        undefinedValue: undefined,
       }
 
       expect(typeof getByPath(obj, 'string')).toBe('string')

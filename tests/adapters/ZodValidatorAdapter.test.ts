@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { z } from 'zod'
-import { ZodValidatorAdapter, createZodAdapter } from '../../src/adapters/ZodValidatorAdapter'
+import {
+  ZodValidatorAdapter,
+  createZodAdapter,
+} from '../../src/adapters/ZodValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
 describe('ZodValidatorAdapter', () => {
@@ -11,11 +14,13 @@ describe('ZodValidatorAdapter', () => {
     name: z.string().min(1, 'Name is required'),
     email: z.string().email('Invalid email format'),
     age: z.number().min(18, 'Must be at least 18'),
-    profile: z.object({
-      bio: z.string().optional(),
-      website: z.string().url('Invalid URL').optional()
-    }).optional(),
-    tags: z.array(z.string()).optional()
+    profile: z
+      .object({
+        bio: z.string().optional(),
+        website: z.string().url('Invalid URL').optional(),
+      })
+      .optional(),
+    tags: z.array(z.string()).optional(),
   })
 
   beforeEach(() => {
@@ -26,9 +31,9 @@ describe('ZodValidatorAdapter', () => {
       age: 25,
       profile: {
         bio: 'Software developer',
-        website: 'https://johndoe.com'
+        website: 'https://johndoe.com',
       },
-      tags: ['javascript', 'typescript']
+      tags: ['javascript', 'typescript'],
     })
   })
 
@@ -149,7 +154,7 @@ describe('ZodValidatorAdapter', () => {
       expect(errors).toEqual({
         name: ['Name is required'],
         email: ['Invalid email format'],
-        age: ['Must be at least 18']
+        age: ['Must be at least 18'],
       })
       expect(adapter.isValid()).toBe(false)
     })
@@ -159,7 +164,7 @@ describe('ZodValidatorAdapter', () => {
 
       const errors = await adapter.validate(dataSource)
       expect(errors).toEqual({
-        'profile.website': ['Invalid URL']
+        'profile.website': ['Invalid URL'],
       })
     })
 
@@ -190,7 +195,7 @@ describe('ZodValidatorAdapter', () => {
 
       expect(adapter.getAllErrors()).toEqual({
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       })
     })
 
@@ -228,7 +233,7 @@ describe('ZodValidatorAdapter', () => {
     it('should set multiple errors', () => {
       const errors = {
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       }
 
       adapter.setErrors(errors)
@@ -258,12 +263,12 @@ describe('ZodValidatorAdapter', () => {
           name: z.string().min(1, 'Name required'),
           contacts: z.object({
             email: z.string().email('Invalid email'),
-            phone: z.string().min(10, 'Phone too short')
-          })
+            phone: z.string().min(10, 'Phone too short'),
+          }),
         }),
         settings: z.object({
-          theme: z.enum(['light', 'dark'], { message: 'Invalid theme' })
-        })
+          theme: z.enum(['light', 'dark'], { message: 'Invalid theme' }),
+        }),
       })
 
       const complexAdapter = new ZodValidatorAdapter(complexSchema)
@@ -272,12 +277,12 @@ describe('ZodValidatorAdapter', () => {
           name: '',
           contacts: {
             email: 'invalid',
-            phone: '123'
-          }
+            phone: '123',
+          },
         },
         settings: {
-          theme: 'blue'
-        }
+          theme: 'blue',
+        },
       })
 
       const errors = await complexAdapter.validate(complexDataSource)
@@ -291,20 +296,23 @@ describe('ZodValidatorAdapter', () => {
       const complexSchema = z.object({
         user: z.object({
           name: z.string().min(1, 'Name required'),
-          email: z.string().email('Invalid email')
-        })
+          email: z.string().email('Invalid email'),
+        }),
       })
 
       const complexAdapter = new ZodValidatorAdapter(complexSchema)
       const complexDataSource = new PlainObjectDataSource({
         user: {
           name: '',
-          email: 'valid@example.com'
-        }
+          email: 'valid@example.com',
+        },
       })
 
       // Validate only the name field - should only return name errors
-      const nameErrors = await complexAdapter.validateField('user.name', complexDataSource)
+      const nameErrors = await complexAdapter.validateField(
+        'user.name',
+        complexDataSource
+      )
       expect(nameErrors).toEqual(['Name required'])
 
       // Email field should not have errors in the adapter state
@@ -314,12 +322,12 @@ describe('ZodValidatorAdapter', () => {
     it('should handle optional fields correctly', async () => {
       const optionalSchema = z.object({
         required: z.string().min(1, 'Required field'),
-        optional: z.string().optional()
+        optional: z.string().optional(),
       })
 
       const optionalAdapter = new ZodValidatorAdapter(optionalSchema)
       const optionalDataSource = new PlainObjectDataSource({
-        required: 'valid'
+        required: 'valid',
         // optional field is missing
       })
 
@@ -329,18 +337,20 @@ describe('ZodValidatorAdapter', () => {
 
     it('should handle array validation with element errors', async () => {
       const arraySchema = z.object({
-        items: z.array(z.object({
-          name: z.string().min(1, 'Item name required'),
-          value: z.number().positive('Value must be positive')
-        }))
+        items: z.array(
+          z.object({
+            name: z.string().min(1, 'Item name required'),
+            value: z.number().positive('Value must be positive'),
+          })
+        ),
       })
 
       const arrayAdapter = new ZodValidatorAdapter(arraySchema)
       const arrayDataSource = new PlainObjectDataSource({
         items: [
           { name: 'valid', value: 5 },
-          { name: '', value: -1 }
-        ]
+          { name: '', value: -1 },
+        ],
       })
 
       const errors = await arrayAdapter.validate(arrayDataSource)

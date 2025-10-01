@@ -9,7 +9,7 @@ export class MockFormValidator implements FormValidator {
     const delay = this.asyncDelays[path] || 0
 
     if (delay > 0) {
-      await new Promise(resolve => setTimeout(resolve, delay))
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
 
     // We can access the data if needed: const data = dataSource.all()
@@ -20,7 +20,7 @@ export class MockFormValidator implements FormValidator {
     const maxDelay = Math.max(...Object.values(this.asyncDelays))
 
     if (maxDelay > 0) {
-      await new Promise(resolve => setTimeout(resolve, maxDelay))
+      await new Promise((resolve) => setTimeout(resolve, maxDelay))
     }
 
     // We can access the data if needed: const data = dataSource.all()

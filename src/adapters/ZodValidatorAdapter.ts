@@ -166,7 +166,10 @@ export class ZodValidatorAdapter implements FormValidator {
     this.errors = { ...errors }
   }
 
-  private pathMatches(zodPath: (string | number)[], targetPath: string): boolean {
+  private pathMatches(
+    zodPath: (string | number)[],
+    targetPath: string
+  ): boolean {
     const zodPathStr = zodPath.join('.')
     return zodPathStr === targetPath
   }

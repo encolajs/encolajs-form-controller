@@ -5,7 +5,10 @@ import type { FormValidator, DataSource } from '../types'
  * Used as the default validator when no validation is needed
  */
 export class NoopValidator implements FormValidator {
-  async validateField(_path: string, _dataSource: DataSource): Promise<string[]> {
+  async validateField(
+    _path: string,
+    _dataSource: DataSource
+  ): Promise<string[]> {
     // Always return no errors (valid)
     return []
   }

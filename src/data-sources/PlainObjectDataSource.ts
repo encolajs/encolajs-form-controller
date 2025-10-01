@@ -4,7 +4,7 @@ import {
   setByPath,
   hasPath,
   removeByPath,
-  deepClone
+  deepClone,
 } from '../utils/pathUtils'
 
 /**
@@ -74,11 +74,11 @@ export class PlainObjectDataSource implements DataSource {
 
     // Validate indices
     if (
-        fromIndex < 0 ||
-        fromIndex >= array.length ||
-        toIndex < 0 ||
-        toIndex >= array.length ||
-        fromIndex === toIndex
+      fromIndex < 0 ||
+      fromIndex >= array.length ||
+      toIndex < 0 ||
+      toIndex >= array.length ||
+      fromIndex === toIndex
     ) {
       return
     }

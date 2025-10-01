@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ValidatorFactory } from '@encolajs/validator'
-import { EncolaValidatorAdapter, createEncolaAdapter, createEncolaAdapterFromRules } from '../../src/adapters/EncolaValidatorAdapter'
+import {
+  EncolaValidatorAdapter,
+  createEncolaAdapter,
+  createEncolaAdapterFromRules,
+} from '../../src/adapters/EncolaValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
 describe('EncolaValidatorAdapter', () => {
@@ -9,12 +13,12 @@ describe('EncolaValidatorAdapter', () => {
   let validatorFactory: ValidatorFactory
 
   const userRules = {
-    'name': 'required|min_length:2',
-    'email': 'required|email',
-    'age': 'required|integer',
+    name: 'required|min_length:2',
+    email: 'required|email',
+    age: 'required|integer',
     'profile.bio': 'max_length:500',
     'profile.website': 'url',
-    'tags.*': 'min_length:1'
+    'tags.*': 'min_length:1',
   }
 
   beforeEach(() => {
@@ -27,9 +31,9 @@ describe('EncolaValidatorAdapter', () => {
       age: 25,
       profile: {
         bio: 'Software developer',
-        website: 'https://johndoe.com'
+        website: 'https://johndoe.com',
       },
-      tags: ['javascript', 'typescript']
+      tags: ['javascript', 'typescript'],
     })
   })
 
@@ -51,7 +55,10 @@ describe('EncolaValidatorAdapter', () => {
     })
 
     it('should be created from rules using factory helper', () => {
-      const rulesAdapter = createEncolaAdapterFromRules(validatorFactory, userRules)
+      const rulesAdapter = createEncolaAdapterFromRules(
+        validatorFactory,
+        userRules
+      )
       expect(rulesAdapter).toBeInstanceOf(EncolaValidatorAdapter)
     })
   })
@@ -160,7 +167,7 @@ describe('EncolaValidatorAdapter', () => {
       expect(errors).toEqual({
         name: ['This field is required'],
         email: ['This field must be a valid email address'],
-        age: ['This field number be an integer']
+        age: ['This field number be an integer'],
       })
       expect(adapter.isValid()).toBe(false)
     })
@@ -170,7 +177,7 @@ describe('EncolaValidatorAdapter', () => {
 
       const errors = await adapter.validate(dataSource)
       expect(errors).toEqual({
-        'profile.website': ['This field must be a valid URL']
+        'profile.website': ['This field must be a valid URL'],
       })
     })
 
@@ -201,7 +208,7 @@ describe('EncolaValidatorAdapter', () => {
 
       expect(adapter.getAllErrors()).toEqual({
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       })
     })
 
@@ -239,7 +246,7 @@ describe('EncolaValidatorAdapter', () => {
     it('should set multiple errors', () => {
       const errors = {
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       }
 
       adapter.setErrors(errors)
@@ -277,7 +284,7 @@ describe('EncolaValidatorAdapter', () => {
         'user.name': 'required|min_length:1',
         'user.contacts.email': 'required|email',
         'user.contacts.phone': 'required|min_length:10',
-        'settings.theme': 'required|in_list:light,dark'
+        'settings.theme': 'required|in_list:light,dark',
       }
 
       const complexValidator = validatorFactory.make(complexRules)
@@ -287,18 +294,22 @@ describe('EncolaValidatorAdapter', () => {
           name: '',
           contacts: {
             email: 'invalid',
-            phone: '123'
-          }
+            phone: '123',
+          },
         },
         settings: {
-          theme: 'blue'
-        }
+          theme: 'blue',
+        },
       })
 
       const errors = await complexAdapter.validate(complexDataSource)
       expect(errors['user.name']).toEqual(['This field is required'])
-      expect(errors['user.contacts.email']).toEqual(['This field must be a valid email address'])
-      expect(errors['user.contacts.phone']).toEqual(['This field must have at least 10 characters'])
+      expect(errors['user.contacts.email']).toEqual([
+        'This field must be a valid email address',
+      ])
+      expect(errors['user.contacts.phone']).toEqual([
+        'This field must have at least 10 characters',
+      ])
       expect(Array.isArray(errors['settings.theme'])).toBe(true)
       expect(errors['settings.theme'].length).toBeGreaterThan(0)
     })
@@ -306,7 +317,7 @@ describe('EncolaValidatorAdapter', () => {
     it('should validate single field in complex schema', async () => {
       const complexRules = {
         'user.name': 'required|min_length:1',
-        'user.email': 'required|email'
+        'user.email': 'required|email',
       }
 
       const complexValidator = validatorFactory.make(complexRules)
@@ -314,12 +325,15 @@ describe('EncolaValidatorAdapter', () => {
       const complexDataSource = new PlainObjectDataSource({
         user: {
           name: '',
-          email: 'valid@example.com'
-        }
+          email: 'valid@example.com',
+        },
       })
 
       // Validate only the name field - should only return name errors
-      const nameErrors = await complexAdapter.validateField('user.name', complexDataSource)
+      const nameErrors = await complexAdapter.validateField(
+        'user.name',
+        complexDataSource
+      )
       expect(nameErrors).toEqual(['This field is required'])
 
       // Email field should not have errors in the adapter state
@@ -328,14 +342,14 @@ describe('EncolaValidatorAdapter', () => {
 
     it('should handle optional fields correctly', async () => {
       const optionalRules = {
-        'required': 'required|min_length:1',
-        'optional': 'max_length:100' // Optional field with max length
+        required: 'required|min_length:1',
+        optional: 'max_length:100', // Optional field with max length
       }
 
       const optionalValidator = validatorFactory.make(optionalRules)
       const optionalAdapter = new EncolaValidatorAdapter(optionalValidator)
       const optionalDataSource = new PlainObjectDataSource({
-        required: 'valid'
+        required: 'valid',
         // optional field is missing
       })
 
@@ -346,7 +360,7 @@ describe('EncolaValidatorAdapter', () => {
     it('should handle array validation with wildcard rules', async () => {
       const arrayRules = {
         'items.*.name': 'required|min_length:1',
-        'items.*.value': 'required|integer'
+        'items.*.value': 'required|integer',
       }
 
       const arrayValidator = validatorFactory.make(arrayRules)
@@ -354,8 +368,8 @@ describe('EncolaValidatorAdapter', () => {
       const arrayDataSource = new PlainObjectDataSource({
         items: [
           { name: 'valid', value: 5 },
-          { name: '', value: 'not-number' }
-        ]
+          { name: '', value: 'not-number' },
+        ],
       })
 
       const errors = await arrayAdapter.validate(arrayDataSource)
@@ -366,38 +380,42 @@ describe('EncolaValidatorAdapter', () => {
 
     it('should handle cross-field validation rules', async () => {
       const crossFieldRules = {
-        'password': 'required|min_length:8',
-        'password_confirmation': 'required'
+        password: 'required|min_length:8',
+        password_confirmation: 'required',
       }
 
       const crossFieldValidator = validatorFactory.make(crossFieldRules)
       const crossFieldAdapter = new EncolaValidatorAdapter(crossFieldValidator)
       const crossFieldDataSource = new PlainObjectDataSource({
         password: 'secret123',
-        password_confirmation: ''
+        password_confirmation: '',
       })
 
       const errors = await crossFieldAdapter.validate(crossFieldDataSource)
-      expect(errors['password_confirmation']).toEqual(['This field is required'])
+      expect(errors['password_confirmation']).toEqual([
+        'This field is required',
+      ])
     })
 
     it('should handle custom messages', async () => {
       // Note: Custom messages might not work exactly as expected with EncolaJS Validator
       // This test validates the adapter handles the validation correctly
       const customValidator = validatorFactory.make({
-        'name': 'required',
-        'email': 'email'
+        name: 'required',
+        email: 'email',
       })
 
       const customAdapter = new EncolaValidatorAdapter(customValidator)
       const invalidDataSource = new PlainObjectDataSource({
         name: '',
-        email: 'invalid'
+        email: 'invalid',
       })
 
       const errors = await customAdapter.validate(invalidDataSource)
       expect(errors['name']).toEqual(['This field is required'])
-      expect(errors['email']).toEqual(['This field must be a valid email address'])
+      expect(errors['email']).toEqual([
+        'This field must be a valid email address',
+      ])
     })
   })
 })

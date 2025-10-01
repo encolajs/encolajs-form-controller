@@ -55,9 +55,10 @@ export class YupValidatorAdapter implements FormValidator {
         } catch (error: any) {
           if (error.name === 'ValidationError') {
             // Handle field-specific validation error
-            let fieldErrors = error.inner && error.inner.length > 0
-              ? error.inner.map((err: YupValidationError) => err.message)
-              : [error.message]
+            let fieldErrors =
+              error.inner && error.inner.length > 0
+                ? error.inner.map((err: YupValidationError) => err.message)
+                : [error.message]
 
             // Remove duplicate error messages
             fieldErrors = [...new Set(fieldErrors)]
@@ -183,9 +184,16 @@ export class YupValidatorAdapter implements FormValidator {
       for (const part of pathParts) {
         if (currentSchema.fields && currentSchema.fields[part]) {
           currentSchema = currentSchema.fields[part]
-        } else if (currentSchema._def && currentSchema._def.shape && currentSchema._def.shape[part]) {
+        } else if (
+          currentSchema._def &&
+          currentSchema._def.shape &&
+          currentSchema._def.shape[part]
+        ) {
           currentSchema = currentSchema._def.shape[part]
-        } else if (currentSchema.describe && typeof currentSchema.describe === 'function') {
+        } else if (
+          currentSchema.describe &&
+          typeof currentSchema.describe === 'function'
+        ) {
           // Use describe() to get schema details and extract field
           const description = currentSchema.describe()
           if (description.fields && description.fields[part]) {

@@ -144,7 +144,9 @@ export class EncolaValidatorAdapter implements FormValidator {
  * Factory function for creating EncolaJS Validator adapter
  * Provides better ergonomics and tree-shaking
  */
-export function createEncolaAdapter(validator?: EncolaValidator): EncolaValidatorAdapter {
+export function createEncolaAdapter(
+  validator?: EncolaValidator
+): EncolaValidatorAdapter {
   return new EncolaValidatorAdapter(validator)
 }
 

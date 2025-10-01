@@ -10,18 +10,21 @@ describe('FormController', () => {
   let validator: MockFormValidator
   let initialData: any
 
-  const createInitialData = () => JSON.parse(JSON.stringify({
-    name: 'John',
-    email: 'john@example.com',
-    items: [
-      { price: 100, quantity: 1 },
-      { price: 200, quantity: 2 }
-    ],
-    address: {
-      street: '123 Main St',
-      city: 'LA'
-    }
-  }))
+  const createInitialData = () =>
+    JSON.parse(
+      JSON.stringify({
+        name: 'John',
+        email: 'john@example.com',
+        items: [
+          { price: 100, quantity: 1 },
+          { price: 200, quantity: 2 },
+        ],
+        address: {
+          street: '123 Main St',
+          city: 'LA',
+        },
+      })
+    )
 
   beforeEach(() => {
     initialData = createInitialData()
@@ -123,7 +126,7 @@ describe('FormController', () => {
     it('should set field errors directly', () => {
       const nameField = formController.field('name')
 
-      formController.setErrors({ 'name': ['Custom error'] })
+      formController.setErrors({ name: ['Custom error'] })
 
       expect(nameField.errors()).toEqual(['Custom error'])
       expect(nameField.isValid()).toBe(false)
@@ -132,8 +135,8 @@ describe('FormController', () => {
     it('should clear field errors when empty array is set', () => {
       const nameField = formController.field('name')
 
-      formController.setErrors({ 'name': ['Error'] })
-      formController.setErrors({ 'name': [] })
+      formController.setErrors({ name: ['Error'] })
+      formController.setErrors({ name: [] })
 
       expect(nameField.errors()).toEqual([])
       expect(nameField.isValid()).toBe(true)
@@ -147,14 +150,16 @@ describe('FormController', () => {
 
     it('should validate entire form', async () => {
       validator.mockFormValidation({
-        'name': ['Name is required'],
-        'email': ['Invalid email']
+        name: ['Name is required'],
+        email: ['Invalid email'],
       })
 
       const isValid = await formController.validate()
 
       expect(isValid).toBe(false)
-      expect(formController.field('name').errors()).toEqual(['Name is required'])
+      expect(formController.field('name').errors()).toEqual([
+        'Name is required',
+      ])
       expect(formController.field('email').errors()).toEqual(['Invalid email'])
     })
 
@@ -168,7 +173,7 @@ describe('FormController', () => {
     })
 
     it('should not submit form when invalid', async () => {
-      validator.mockFormValidation({ 'name': ['Error'] })
+      validator.mockFormValidation({ name: ['Error'] })
 
       const result = await formController.submit()
 
@@ -219,8 +224,8 @@ describe('FormController', () => {
 
     it('should set form-level errors', () => {
       formController.setErrors({
-        'name': ['Name error'],
-        'email': ['Email error']
+        name: ['Name error'],
+        email: ['Email error'],
       })
 
       expect(formController.field('name').errors()).toEqual(['Name error'])
@@ -471,7 +476,9 @@ describe('FormController', () => {
         formController.field('items.2.price')
         formController.field('items.3.quantity')
         await formController.setValue('items.2.price', 350, { validate: false })
-        await formController.setValue('items.3.quantity', 8, { validate: false })
+        await formController.setValue('items.3.quantity', 8, {
+          validate: false,
+        })
 
         // Move item from index 0 to index 3 (drag & drop behavior)
         formController.arrayMove('items', 0, 3)
@@ -550,7 +557,7 @@ describe('FormController', () => {
     it('should update isValid when validation state changes', () => {
       expect(formController.isValid()).toBe(true)
 
-      formController.setErrors({ 'name': ['Error'] })
+      formController.setErrors({ name: ['Error'] })
 
       expect(formController.isValid()).toBe(false)
     })
@@ -566,11 +573,11 @@ describe('FormController', () => {
       expect(validityStates[validityStates.length - 1]).toBe(true)
 
       // Add error - should become invalid
-      formController.setErrors({ 'name': ['Error'] })
+      formController.setErrors({ name: ['Error'] })
       expect(validityStates[validityStates.length - 1]).toBe(false)
 
       // Clear error - should become valid again
-      formController.setErrors({ 'name': [] })
+      formController.setErrors({ name: [] })
       expect(validityStates[validityStates.length - 1]).toBe(true)
     })
   })
@@ -626,7 +633,7 @@ describe('FormController', () => {
         formController.setValue('name', 'Jane'),
         formController.setValue('name', 'Bob'),
         formController.validateField('name'),
-        formController.validate()
+        formController.validate(),
       ]
 
       await Promise.all(promises)
@@ -636,7 +643,7 @@ describe('FormController', () => {
     })
 
     it('should handle validation errors during submit', async () => {
-      validator.mockFormValidation({ 'name': ['Error'] })
+      validator.mockFormValidation({ name: ['Error'] })
 
       const result = await formController.submit()
 
@@ -667,7 +674,7 @@ describe('FormController', () => {
       await formController.setValue('name', 'Jane', {
         validate: false,
         touch: false,
-        dirty: false
+        dirty: false,
       })
 
       expect(nameField.value()).toBe('Jane')
@@ -688,7 +695,10 @@ describe('FormController', () => {
       validator.mockFieldValidation('name', ['Error'])
       const nameField = formController.field('name')
 
-      await formController.setValue('name', '', { validate: false, dirty: true })
+      await formController.setValue('name', '', {
+        validate: false,
+        dirty: true,
+      })
 
       expect(nameField.errors()).toEqual([])
     })
@@ -725,7 +735,10 @@ describe('FormController', () => {
       const nameField = formController.field('name')
 
       // validate=false should override dirty=true
-      await formController.setValue('name', '', { validate: false, dirty: true })
+      await formController.setValue('name', '', {
+        validate: false,
+        dirty: true,
+      })
 
       expect(nameField.errors()).toEqual([])
     })
@@ -736,7 +749,7 @@ describe('FormController', () => {
       dataSource.set('items', [
         { name: 'Item 1', value: 10 },
         { name: 'Item 2', value: 20 },
-        { name: 'Item 3', value: 30 }
+        { name: 'Item 3', value: 30 },
       ])
     })
 

@@ -12,8 +12,8 @@ describe('FormController - Repeatable Field Validation', () => {
     // Initial data with one order item that will be invalid
     const initialData = {
       orderItems: [
-        { name: '', price: 10 } // Empty name will be invalid
-      ]
+        { name: '', price: 10 }, // Empty name will be invalid
+      ],
     }
 
     dataSource = new PlainObjectDataSource(initialData)
@@ -23,7 +23,10 @@ describe('FormController - Repeatable Field Validation', () => {
     const originalValidateField = validator.validateField.bind(validator)
     const originalValidate = validator.validate.bind(validator)
 
-    validator.validateField = async (path: string, dataSource: PlainObjectDataSource) => {
+    validator.validateField = async (
+      path: string,
+      dataSource: PlainObjectDataSource
+    ) => {
       const value = dataSource.get(path)
       if (path.endsWith('.name') && (value === '' || value == null)) {
         return ['Name is required']
@@ -41,7 +44,11 @@ describe('FormController - Repeatable Field Validation', () => {
           const currentPath = basePath ? `${basePath}.${key}` : key
           if (key === 'name' && (obj[key] === '' || obj[key] == null)) {
             errors[currentPath] = ['Name is required']
-          } else if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+          } else if (
+            typeof obj[key] === 'object' &&
+            obj[key] !== null &&
+            !Array.isArray(obj[key])
+          ) {
             findEmptyNames(obj[key], currentPath)
           } else if (Array.isArray(obj[key])) {
             obj[key].forEach((item: any, index: number) => {
@@ -80,7 +87,9 @@ describe('FormController - Repeatable Field Validation', () => {
     expect(orderItems[1]).toEqual({ name: 'New Item', price: 20 })
 
     // The error should still be on the first item
-    expect(formController.field('orderItems.0.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.0.name').errors()).toEqual([
+      'Name is required',
+    ])
 
     // Step 4: Remove the first item (the one with the validation error)
     await formController.arrayRemove('orderItems', 0)
@@ -104,16 +113,23 @@ describe('FormController - Repeatable Field Validation', () => {
 
   it('should handle validation state correctly when middle item is removed', async () => {
     // Start with 3 items
-    await formController.arrayAdd('orderItems', { name: 'Second Item', price: 15 })
+    await formController.arrayAdd('orderItems', {
+      name: 'Second Item',
+      price: 15,
+    })
     await formController.arrayAdd('orderItems', { name: '', price: 25 }) // Invalid third item
 
     // Validate to attach errors (validator will automatically fail empty names)
     await formController.validate()
 
     // Verify initial state
-    expect(formController.field('orderItems.0.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.0.name').errors()).toEqual([
+      'Name is required',
+    ])
     expect(formController.field('orderItems.1.name').errors()).toEqual([])
-    expect(formController.field('orderItems.2.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.2.name').errors()).toEqual([
+      'Name is required',
+    ])
 
     // Remove the middle item (index 1)
     await formController.arrayRemove('orderItems', 1)
@@ -126,10 +142,13 @@ describe('FormController - Repeatable Field Validation', () => {
     expect(items[0]).toEqual({ name: '', price: 10 })
     expect(items[1]).toEqual({ name: '', price: 25 })
 
-
     // The error states should have shifted appropriately
-    expect(formController.field('orderItems.0.name').errors()).toEqual(['Name is required'])
-    expect(formController.field('orderItems.1.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.0.name').errors()).toEqual([
+      'Name is required',
+    ])
+    expect(formController.field('orderItems.1.name').errors()).toEqual([
+      'Name is required',
+    ])
   })
 
   it('should clear all validation errors when entire array is cleared', async () => {
@@ -141,9 +160,15 @@ describe('FormController - Repeatable Field Validation', () => {
     await formController.validate()
 
     // Verify all errors are present
-    expect(formController.field('orderItems.0.name').errors()).toEqual(['Name is required'])
-    expect(formController.field('orderItems.1.name').errors()).toEqual(['Name is required'])
-    expect(formController.field('orderItems.2.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.0.name').errors()).toEqual([
+      'Name is required',
+    ])
+    expect(formController.field('orderItems.1.name').errors()).toEqual([
+      'Name is required',
+    ])
+    expect(formController.field('orderItems.2.name').errors()).toEqual([
+      'Name is required',
+    ])
     expect(formController.isValid()).toBe(false)
 
     // Remove all items
@@ -167,14 +192,19 @@ describe('FormController - Repeatable Field Validation', () => {
     // Start with 3 items: valid, invalid, valid
     await formController.setValue('orderItems.0.name', 'Valid Item 1')
     await formController.arrayAdd('orderItems', { name: '', price: 15 }) // Invalid
-    await formController.arrayAdd('orderItems', { name: 'Valid Item 3', price: 25 })
+    await formController.arrayAdd('orderItems', {
+      name: 'Valid Item 3',
+      price: 25,
+    })
 
     // Validate to attach errors (validator will automatically fail empty names)
     await formController.validate()
 
     // Verify initial state (only middle item has empty name, so only it has errors)
     expect(formController.field('orderItems.0.name').errors()).toEqual([])
-    expect(formController.field('orderItems.1.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.1.name').errors()).toEqual([
+      'Name is required',
+    ])
     expect(formController.field('orderItems.2.name').errors()).toEqual([])
     expect(formController.isValid()).toBe(false)
 
@@ -199,18 +229,28 @@ describe('FormController - Repeatable Field Validation', () => {
     // Start with 5 items: valid, invalid, valid, invalid, valid
     await formController.setValue('orderItems.0.name', 'Valid Item 1')
     await formController.arrayAdd('orderItems', { name: '', price: 15 }) // Invalid at index 1
-    await formController.arrayAdd('orderItems', { name: 'Valid Item 3', price: 25 })
+    await formController.arrayAdd('orderItems', {
+      name: 'Valid Item 3',
+      price: 25,
+    })
     await formController.arrayAdd('orderItems', { name: '', price: 35 }) // Invalid at index 3
-    await formController.arrayAdd('orderItems', { name: 'Valid Item 5', price: 45 }) // Valid at index 4
+    await formController.arrayAdd('orderItems', {
+      name: 'Valid Item 5',
+      price: 45,
+    }) // Valid at index 4
 
     // Validate to attach errors (validator will automatically fail empty names)
     await formController.validate()
 
     // Verify initial state - errors on indices 1 and 3 only
     expect(formController.field('orderItems.0.name').errors()).toEqual([])
-    expect(formController.field('orderItems.1.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.1.name').errors()).toEqual([
+      'Name is required',
+    ])
     expect(formController.field('orderItems.2.name').errors()).toEqual([])
-    expect(formController.field('orderItems.3.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.3.name').errors()).toEqual([
+      'Name is required',
+    ])
     expect(formController.field('orderItems.4.name').errors()).toEqual([])
     expect(formController.isValid()).toBe(false)
 
@@ -231,9 +271,9 @@ describe('FormController - Repeatable Field Validation', () => {
     expect(movedItems).toHaveLength(5)
     expect(movedItems[0].name).toBe('Valid Item 1') // Unchanged
     expect(movedItems[1].name).toBe('Valid Item 3') // Item 3 shifted left from index 2
-    expect(movedItems[2].name).toBe('')            // Empty item shifted left from index 3
+    expect(movedItems[2].name).toBe('') // Empty item shifted left from index 3
     expect(movedItems[3].name).toBe('Valid Item 5') // Item 5 shifted left from index 4
-    expect(movedItems[4].name).toBe('')            // Empty item moved from index 1
+    expect(movedItems[4].name).toBe('') // Empty item moved from index 1
 
     // Verify validation errors after move:
     // - Index 0: no error (unchanged position, valid item)
@@ -243,9 +283,13 @@ describe('FormController - Repeatable Field Validation', () => {
     // - Index 4: error (empty item moved from index 1, invalid)
     expect(formController.field('orderItems.0.name').errors()).toEqual([])
     expect(formController.field('orderItems.1.name').errors()).toEqual([])
-    expect(formController.field('orderItems.2.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.2.name').errors()).toEqual([
+      'Name is required',
+    ])
     expect(formController.field('orderItems.3.name').errors()).toEqual([])
-    expect(formController.field('orderItems.4.name').errors()).toEqual(['Name is required'])
+    expect(formController.field('orderItems.4.name').errors()).toEqual([
+      'Name is required',
+    ])
 
     // Form should still be invalid since there are still empty names
     expect(formController.isValid()).toBe(false)

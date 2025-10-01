@@ -9,12 +9,12 @@ describe('PlainObjectDataSource', () => {
     age: 30,
     address: {
       street: '123 Main St',
-      city: 'LA'
+      city: 'LA',
     },
     items: [
       { price: 100, quantity: 1 },
-      { price: 200, quantity: 2 }
-    ]
+      { price: 200, quantity: 2 },
+    ],
   })
 
   beforeEach(() => {
@@ -261,7 +261,7 @@ describe('PlainObjectDataSource', () => {
           { name: 'Item 1' },
           { name: 'Item 2' },
           { name: 'Item 3' },
-          { name: 'Item 4' }
+          { name: 'Item 4' },
         ])
 
         // Verify initial state
@@ -335,7 +335,9 @@ describe('PlainObjectDataSource', () => {
 
     it('should handle cloning with complex nested structures', () => {
       // Add complex nested structure
-      dataSource.set('complex.nested.array', [{ id: 1, data: { value: 'test' } }])
+      dataSource.set('complex.nested.array', [
+        { id: 1, data: { value: 'test' } },
+      ])
 
       const clonedDataSource = dataSource.clone()
 
@@ -343,8 +345,12 @@ describe('PlainObjectDataSource', () => {
       dataSource.set('complex.nested.array.0.data.value', 'modified')
 
       // Clone should be unchanged
-      expect(clonedDataSource.get('complex.nested.array.0.data.value')).toBe('test')
-      expect(dataSource.get('complex.nested.array.0.data.value')).toBe('modified')
+      expect(clonedDataSource.get('complex.nested.array.0.data.value')).toBe(
+        'test'
+      )
+      expect(dataSource.get('complex.nested.array.0.data.value')).toBe(
+        'modified'
+      )
     })
   })
 
@@ -390,7 +396,7 @@ describe('PlainObjectDataSource', () => {
         object: { nested: true },
         nullValue: null,
         undefinedValue: undefined,
-        date: new Date('2023-01-01')
+        date: new Date('2023-01-01'),
       }
 
       const source = new PlainObjectDataSource(testData)

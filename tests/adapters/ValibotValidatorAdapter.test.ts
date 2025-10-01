@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import * as v from 'valibot'
-import { ValibotValidatorAdapter, createValibotAdapter } from '../../src/adapters/ValibotValidatorAdapter'
+import {
+  ValibotValidatorAdapter,
+  createValibotAdapter,
+} from '../../src/adapters/ValibotValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
 // Set up global valibot for the adapter to use
@@ -14,11 +17,13 @@ describe('ValibotValidatorAdapter', () => {
     name: v.pipe(v.string(), v.minLength(1, 'Name is required')),
     email: v.pipe(v.string(), v.email('Invalid email format')),
     age: v.pipe(v.number(), v.minValue(18, 'Must be at least 18')),
-    profile: v.optional(v.object({
-      bio: v.optional(v.string()),
-      website: v.optional(v.pipe(v.string(), v.url('Invalid URL')))
-    })),
-    tags: v.optional(v.array(v.string()))
+    profile: v.optional(
+      v.object({
+        bio: v.optional(v.string()),
+        website: v.optional(v.pipe(v.string(), v.url('Invalid URL'))),
+      })
+    ),
+    tags: v.optional(v.array(v.string())),
   })
 
   beforeEach(() => {
@@ -29,9 +34,9 @@ describe('ValibotValidatorAdapter', () => {
       age: 25,
       profile: {
         bio: 'Software developer',
-        website: 'https://johndoe.com'
+        website: 'https://johndoe.com',
       },
-      tags: ['javascript', 'typescript']
+      tags: ['javascript', 'typescript'],
     })
   })
 
@@ -152,7 +157,7 @@ describe('ValibotValidatorAdapter', () => {
       expect(errors).toEqual({
         name: ['Name is required'],
         email: ['Invalid email format'],
-        age: ['Must be at least 18']
+        age: ['Must be at least 18'],
       })
       expect(adapter.isValid()).toBe(false)
     })
@@ -162,7 +167,7 @@ describe('ValibotValidatorAdapter', () => {
 
       const errors = await adapter.validate(dataSource)
       expect(errors).toEqual({
-        'profile.website': ['Invalid URL']
+        'profile.website': ['Invalid URL'],
       })
     })
 
@@ -193,7 +198,7 @@ describe('ValibotValidatorAdapter', () => {
 
       expect(adapter.getAllErrors()).toEqual({
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       })
     })
 
@@ -231,7 +236,7 @@ describe('ValibotValidatorAdapter', () => {
     it('should set multiple errors', () => {
       const errors = {
         name: ['Name error'],
-        email: ['Email error']
+        email: ['Email error'],
       }
 
       adapter.setErrors(errors)
@@ -261,12 +266,12 @@ describe('ValibotValidatorAdapter', () => {
           name: v.pipe(v.string(), v.minLength(1, 'Name required')),
           contacts: v.object({
             email: v.pipe(v.string(), v.email('Invalid email')),
-            phone: v.pipe(v.string(), v.minLength(10, 'Phone too short'))
-          })
+            phone: v.pipe(v.string(), v.minLength(10, 'Phone too short')),
+          }),
         }),
         settings: v.object({
-          theme: v.picklist(['light', 'dark'], 'Invalid theme')
-        })
+          theme: v.picklist(['light', 'dark'], 'Invalid theme'),
+        }),
       })
 
       const complexAdapter = new ValibotValidatorAdapter(complexSchema)
@@ -275,12 +280,12 @@ describe('ValibotValidatorAdapter', () => {
           name: '',
           contacts: {
             email: 'invalid',
-            phone: '123'
-          }
+            phone: '123',
+          },
         },
         settings: {
-          theme: 'blue'
-        }
+          theme: 'blue',
+        },
       })
 
       const errors = await complexAdapter.validate(complexDataSource)
@@ -294,20 +299,23 @@ describe('ValibotValidatorAdapter', () => {
       const complexSchema = v.object({
         user: v.object({
           name: v.pipe(v.string(), v.minLength(1, 'Name required')),
-          email: v.pipe(v.string(), v.email('Invalid email'))
-        })
+          email: v.pipe(v.string(), v.email('Invalid email')),
+        }),
       })
 
       const complexAdapter = new ValibotValidatorAdapter(complexSchema)
       const complexDataSource = new PlainObjectDataSource({
         user: {
           name: '',
-          email: 'valid@example.com'
-        }
+          email: 'valid@example.com',
+        },
       })
 
       // Validate only the name field - should only return name errors
-      const nameErrors = await complexAdapter.validateField('user.name', complexDataSource)
+      const nameErrors = await complexAdapter.validateField(
+        'user.name',
+        complexDataSource
+      )
       expect(nameErrors).toEqual(['Name required'])
 
       // Email field should not have errors in the adapter state
@@ -317,12 +325,12 @@ describe('ValibotValidatorAdapter', () => {
     it('should handle optional fields correctly', async () => {
       const optionalSchema = v.object({
         required: v.pipe(v.string(), v.minLength(1, 'Required field')),
-        optional: v.optional(v.string())
+        optional: v.optional(v.string()),
       })
 
       const optionalAdapter = new ValibotValidatorAdapter(optionalSchema)
       const optionalDataSource = new PlainObjectDataSource({
-        required: 'valid'
+        required: 'valid',
         // optional field is missing
       })
 
@@ -332,18 +340,20 @@ describe('ValibotValidatorAdapter', () => {
 
     it('should handle array validation with element errors', async () => {
       const arraySchema = v.object({
-        items: v.array(v.object({
-          name: v.pipe(v.string(), v.minLength(1, 'Item name required')),
-          value: v.pipe(v.number(), v.minValue(1, 'Value must be positive'))
-        }))
+        items: v.array(
+          v.object({
+            name: v.pipe(v.string(), v.minLength(1, 'Item name required')),
+            value: v.pipe(v.number(), v.minValue(1, 'Value must be positive')),
+          })
+        ),
       })
 
       const arrayAdapter = new ValibotValidatorAdapter(arraySchema)
       const arrayDataSource = new PlainObjectDataSource({
         items: [
           { name: 'valid', value: 5 },
-          { name: '', value: -1 }
-        ]
+          { name: '', value: -1 },
+        ],
       })
 
       const errors = await arrayAdapter.validate(arrayDataSource)
@@ -354,12 +364,12 @@ describe('ValibotValidatorAdapter', () => {
     it('should handle different Valibot API patterns', async () => {
       // Test with both safeParse and regular parse patterns
       const simpleSchema = v.object({
-        test: v.pipe(v.string(), v.minLength(1, 'Test required'))
+        test: v.pipe(v.string(), v.minLength(1, 'Test required')),
       })
 
       const testAdapter = new ValibotValidatorAdapter(simpleSchema)
       const testDataSource = new PlainObjectDataSource({
-        test: ''
+        test: '',
       })
 
       const errors = await testAdapter.validateField('test', testDataSource)

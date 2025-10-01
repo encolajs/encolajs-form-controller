@@ -10,28 +10,41 @@ describe('FormController Integration', () => {
   let validator: MockFormValidator
   let initialData: any
 
-  const createInitialData = () => JSON.parse(JSON.stringify({
-    user: {
-      name: 'John Doe',
-      email: 'john@example.com',
-      profile: {
-        bio: 'Software Developer',
-        avatar: null
-      }
-    },
-    products: [
-      { id: 1, name: 'Product 1', price: 100, tags: ['electronics', 'mobile'] },
-      { id: 2, name: 'Product 2', price: 200, tags: ['electronics', 'computer'] }
-    ],
-    settings: {
-      notifications: {
-        email: true,
-        sms: false,
-        push: true
-      },
-      preferences: ['dark-mode', 'auto-save']
-    }
-  }))
+  const createInitialData = () =>
+    JSON.parse(
+      JSON.stringify({
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          profile: {
+            bio: 'Software Developer',
+            avatar: null,
+          },
+        },
+        products: [
+          {
+            id: 1,
+            name: 'Product 1',
+            price: 100,
+            tags: ['electronics', 'mobile'],
+          },
+          {
+            id: 2,
+            name: 'Product 2',
+            price: 200,
+            tags: ['electronics', 'computer'],
+          },
+        ],
+        settings: {
+          notifications: {
+            email: true,
+            sms: false,
+            push: true,
+          },
+          preferences: ['dark-mode', 'auto-save'],
+        },
+      })
+    )
 
   beforeEach(() => {
     initialData = createInitialData()
@@ -53,7 +66,7 @@ describe('FormController Integration', () => {
         stateChanges.push({
           isDirty: formController.isDirty(),
           isTouched: formController.isTouched(),
-          isValid: formController.isValid()
+          isValid: formController.isValid(),
         })
       })
 
@@ -79,7 +92,10 @@ describe('FormController Integration', () => {
       expect(formController.isValid()).toBe(true)
 
       // Update bio
-      await formController.setValue('user.profile.bio', 'Senior Software Developer')
+      await formController.setValue(
+        'user.profile.bio',
+        'Senior Software Developer'
+      )
 
       // Verify final state
       expect(formController.getValues()).toMatchObject({
@@ -87,9 +103,9 @@ describe('FormController Integration', () => {
           name: 'Jane Doe',
           email: 'jane@example.com',
           profile: {
-            bio: 'Senior Software Developer'
-          }
-        }
+            bio: 'Senior Software Developer',
+          },
+        },
       })
     })
 
@@ -98,7 +114,12 @@ describe('FormController Integration', () => {
       expect(dataSource.get('products')).toHaveLength(2)
 
       // Add new product
-      const newProduct = { id: 3, name: 'Product 3', price: 300, tags: ['electronics', 'gaming'] }
+      const newProduct = {
+        id: 3,
+        name: 'Product 3',
+        price: 300,
+        tags: ['electronics', 'gaming'],
+      }
       formController.arrayAdd('products', newProduct)
 
       expect(dataSource.get('products')).toHaveLength(3)
@@ -123,7 +144,9 @@ describe('FormController Integration', () => {
 
     it('should handle nested settings configuration', async () => {
       // Toggle email notifications
-      const emailNotifField = formController.field('settings.notifications.email')
+      const emailNotifField = formController.field(
+        'settings.notifications.email'
+      )
       await formController.setValue('settings.notifications.email', false)
       expect(emailNotifField.value()).toBe(false)
 
@@ -141,10 +164,10 @@ describe('FormController Integration', () => {
           notifications: {
             email: false,
             sms: false,
-            push: false
+            push: false,
           },
-          preferences: ['dark-mode', 'auto-save', 'compact-view']
-        }
+          preferences: ['dark-mode', 'auto-save', 'compact-view'],
+        },
       })
     })
   })
@@ -195,7 +218,7 @@ describe('FormController Integration', () => {
       await Promise.all([
         formController.setValue('user.name', 'Jane'),
         formController.setValue('user.email', 'jane@example.com'),
-        formController.setValue('products.0.price', 150)
+        formController.setValue('products.0.price', 150),
       ])
 
       expect(nameField.value()).toBe('Jane')
@@ -223,13 +246,17 @@ describe('FormController Integration', () => {
       // Simulate server validation errors
       const serverErrors = {
         'user.email': ['Email already exists'],
-        'products.0.name': ['Product name must be unique']
+        'products.0.name': ['Product name must be unique'],
       }
 
       formController.setErrors(serverErrors)
 
-      expect(formController.field('user.email').errors()).toEqual(['Email already exists'])
-      expect(formController.field('products.0.name').errors()).toEqual(['Product name must be unique'])
+      expect(formController.field('user.email').errors()).toEqual([
+        'Email already exists',
+      ])
+      expect(formController.field('products.0.name').errors()).toEqual([
+        'Product name must be unique',
+      ])
       expect(formController.isValid()).toBe(false)
 
       // Clear one error
@@ -265,7 +292,7 @@ describe('FormController Integration', () => {
       // Set up form with validation errors
       validator.mockFormValidation({
         'user.name': ['Name is required'],
-        'products.0.price': ['Price must be positive']
+        'products.0.price': ['Price must be positive'],
       })
 
       // Attempt to submit
@@ -273,8 +300,12 @@ describe('FormController Integration', () => {
 
       expect(result).toBe(false)
       expect(formController.isSubmitting()).toBe(false)
-      expect(formController.field('user.name').errors()).toEqual(['Name is required'])
-      expect(formController.field('products.0.price').errors()).toEqual(['Price must be positive'])
+      expect(formController.field('user.name').errors()).toEqual([
+        'Name is required',
+      ])
+      expect(formController.field('products.0.price').errors()).toEqual([
+        'Price must be positive',
+      ])
 
       // Fix validation errors
       validator.mockFormValidation({})
@@ -288,17 +319,31 @@ describe('FormController Integration', () => {
   describe('complex data manipulation', () => {
     it('should handle deep nested updates', async () => {
       // Create deep nested structure
-      const deepField = formController.field('user.profile.settings.theme.colors.primary')
-      await formController.setValue('user.profile.settings.theme.colors.primary', '#007bff')
+      const deepField = formController.field(
+        'user.profile.settings.theme.colors.primary'
+      )
+      await formController.setValue(
+        'user.profile.settings.theme.colors.primary',
+        '#007bff'
+      )
 
-      expect(dataSource.get('user.profile.settings.theme.colors.primary')).toBe('#007bff')
+      expect(dataSource.get('user.profile.settings.theme.colors.primary')).toBe(
+        '#007bff'
+      )
       expect(deepField.value()).toBe('#007bff')
 
       // Update another deep field
-      const secondaryField = formController.field('user.profile.settings.theme.colors.secondary')
-      await formController.setValue('user.profile.settings.theme.colors.secondary', '#6c757d')
+      const secondaryField = formController.field(
+        'user.profile.settings.theme.colors.secondary'
+      )
+      await formController.setValue(
+        'user.profile.settings.theme.colors.secondary',
+        '#6c757d'
+      )
 
-      expect(dataSource.get('user.profile.settings.theme.colors.secondary')).toBe('#6c757d')
+      expect(
+        dataSource.get('user.profile.settings.theme.colors.secondary')
+      ).toBe('#6c757d')
     })
 
     it('should handle array of objects with complex operations', async () => {
@@ -307,7 +352,7 @@ describe('FormController Integration', () => {
         id: 3,
         name: 'Gaming Laptop',
         price: 1500,
-        tags: ['electronics', 'gaming', 'computer']
+        tags: ['electronics', 'gaming', 'computer'],
       }
       formController.arrayAdd('products', newProduct)
 
@@ -315,8 +360,12 @@ describe('FormController Integration', () => {
       formController.arrayAdd('products.0.tags', 'bestseller')
       formController.arrayAdd('products.0.tags', 'featured')
 
-      expect(formController.field('products.0.tags').value()).toContain('bestseller')
-      expect(formController.field('products.0.tags').value()).toContain('featured')
+      expect(formController.field('products.0.tags').value()).toContain(
+        'bestseller'
+      )
+      expect(formController.field('products.0.tags').value()).toContain(
+        'featured'
+      )
 
       // Remove a tag
       formController.arrayRemove('products.0.tags', 0) // Remove 'electronics'
@@ -331,7 +380,12 @@ describe('FormController Integration', () => {
 
       // Perform multiple operations
       await formController.setValue('user.name', 'Updated Name')
-      formController.arrayAdd('products', { id: 3, name: 'New Product', price: 300, tags: [] })
+      formController.arrayAdd('products', {
+        id: 3,
+        name: 'New Product',
+        price: 300,
+        tags: [],
+      })
       await formController.setValue('settings.notifications.email', false)
       formController.arrayRemove('products', 0)
 
@@ -347,9 +401,13 @@ describe('FormController Integration', () => {
   describe('error handling and edge cases', () => {
     it('should handle invalid path operations gracefully', async () => {
       // Try to set value on invalid path - our implementation creates missing paths
-      const invalidField = formController.field('non.existent.deeply.nested.path')
+      const invalidField = formController.field(
+        'non.existent.deeply.nested.path'
+      )
 
-      expect(() => formController.setValue('non.existent.deeply.nested.path', 'test')).not.toThrow()
+      expect(() =>
+        formController.setValue('non.existent.deeply.nested.path', 'test')
+      ).not.toThrow()
       await formController.setValue('non.existent.deeply.nested.path', 'test')
       expect(invalidField.value()).toBe('test') // Path is created and value is set
     })
@@ -381,7 +439,7 @@ describe('FormController Integration', () => {
       const validations = [
         formController.validateField('user.email'),
         formController.validateField('user.email'),
-        formController.validateField('user.email')
+        formController.validateField('user.email'),
       ]
 
       const results = await Promise.all(validations)
@@ -400,8 +458,8 @@ describe('FormController Integration', () => {
           id: i,
           name: `Item ${i}`,
           value: Math.random() * 1000,
-          tags: [`tag${i % 10}`, `category${i % 5}`]
-        }))
+          tags: [`tag${i % 10}`, `category${i % 5}`],
+        })),
       }
 
       const largeDataSource = new PlainObjectDataSource(largeData)
@@ -412,21 +470,29 @@ describe('FormController Integration', () => {
       // Perform operations on large dataset
       await largeController.setValue('items.500.name', 'Updated Item 500')
       await largeController.validate()
-      largeController.arrayAdd('items', { id: 1000, name: 'New Item', value: 500, tags: [] }, 501)
+      largeController.arrayAdd(
+        'items',
+        { id: 1000, name: 'New Item', value: 500, tags: [] },
+        501
+      )
       largeController.arrayMove('items', 999, 3)
 
       const endTime = Date.now()
 
       // Should complete in reasonable time
       expect(endTime - startTime).toBeLessThan(300)
-      expect(largeController.field('items.501.name').value()).toBe('Updated Item 500')
+      expect(largeController.field('items.501.name').value()).toBe(
+        'Updated Item 500'
+      )
     })
 
     it('should properly cleanup resources', () => {
       const field = formController.field('user.name')
 
       // Create many field references
-      const fields = Array.from({ length: 100 }, () => formController.field(`test.${Math.random()}`))
+      const fields = Array.from({ length: 100 }, () =>
+        formController.field(`test.${Math.random()}`)
+      )
 
       expect(() => formController.destroy()).not.toThrow()
 

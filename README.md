@@ -13,7 +13,7 @@ Framework-agnostic form state management using `alien-signals` for reactivity.
 - ⚡ **Reactive** - Built on alien-signals for efficient reactivity
 - 🎯 **Type Safe** - Full TypeScript support
 - 🧩 **Pluggable** - Supports custom data sources and validators
-- 📦 **Lightweight** - Minimal dependencies
+- 📦 **Lightweight** - 5Kb gzipped (without validators)
 
 ## Installation
 

@@ -117,7 +117,7 @@ export async function removeFieldState(
   arrayPath: string,
   removeIndex: number,
   arrayLength: number,
-  errorCleanup?: (arrayPath: string, removeIndex: number, arrayLength: number) => void
+  errorCleanup?: (arrayPath: string, removeIndex: number) => void
 ): Promise<void> {
   const arrayFieldStates = getFieldStatesByPath(fieldStates, arrayPath)
   if (arrayFieldStates.length === 0) return
@@ -188,7 +188,7 @@ export async function removeFieldState(
 
   // Clean up errors if callback provided
   if (errorCleanup) {
-    errorCleanup(arrayPath, removeIndex, arrayLength)
+    errorCleanup(arrayPath, removeIndex)
   }
 
   await revalidateFields(fieldsToRevalidate, fieldValidator)

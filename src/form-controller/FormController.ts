@@ -295,7 +295,7 @@ export class FormController implements IFormController {
       arrayPath,
       index,
       currentArrayLength,
-      (arrayPath, removeIndex, arrayLength) => this.cleanupArrayErrors(arrayPath, removeIndex, arrayLength)
+      (arrayPath, removeIndex) => this.cleanupArrayErrors(arrayPath, removeIndex)
     )
 
     // Mark array field as dirty
@@ -360,7 +360,7 @@ export class FormController implements IFormController {
   /**
    * Clean up errors when removing array items
    */
-  private cleanupArrayErrors(arrayPath: string, removeIndex: number, arrayLength: number): void {
+  private cleanupArrayErrors(arrayPath: string, removeIndex: number): void {
     const arrayPathPrefix = `${arrayPath}.`
     const updatedErrors: Record<string, string[]> = {}
 

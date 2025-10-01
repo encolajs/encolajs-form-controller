@@ -2,15 +2,21 @@
 import { FormController, PlainObjectDataSource, effect } from '../../../src/'
 import { createEncolaAdapterFromRules } from '../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
-import {Alpine} from 'alpinejs'
 import {onMounted} from 'vue'
 import contents from './alpinejs.html?raw'
+
+let Alpine = {}
 
 // Create global validator factory
 const validatorFactory = new ValidatorFactory()
 
-// Register Alpine.js component for form handling
-Alpine.data('encolaForm', (config = {}) => {
+onMounted(async () => {
+  // Dynamically import Alpine.js only in the browser
+  const alpineModule = await import('alpinejs')
+  Alpine = alpineModule.Alpine
+
+  // Register Alpine.js component for form handling
+  Alpine.data('encolaForm', (config = {}) => {
     const {
       values = {},
       rules = {},
@@ -194,7 +200,6 @@ Alpine.data('encolaForm', (config = {}) => {
     return alpineData
   })
 
-onMounted(() => {
   // we have to do it this way because the Alpine's syntax
   // is not compatible with Vue's template parsing engine
   document.getElementById('alpine-example').innerHTML = contents

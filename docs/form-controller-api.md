@@ -96,6 +96,10 @@ interface IFieldState {
   readonly wasValidated: Signal<boolean>   // Whether field has been validated at least once
   readonly isValid: ISignal<boolean>       // Whether field is valid (computed)
   readonly errors: ISignal<string[]>       // Current field validation errors (computed)
+
+  // Change tracking methods
+  valueUpdated(): number                   // Subscribe to value changes for this field
+  triggerValueUpdate(): void               // Trigger value update (internal use)
 }
 ```
 
@@ -109,8 +113,12 @@ console.log(nameField.errors())     // Validation errors
 console.log(nameField.isValid())    // Validity status
 console.log(nameField.isDirty())    // Dirty status
 
-// Watch field changes
+// Watch field changes using alien-signals
+import { effect } from 'alien-signals'
+
 effect(() => {
+  // Subscribe to field-specific value changes
+  nameField.valueUpdated()
   console.log('Name changed:', nameField.value())
 })
 ```
@@ -190,22 +198,22 @@ await form.arrayRemove('tags', 0)
 await form.arrayMove('items', 0, 2) // Move first item to third position
 ```
 
-### State Management
+### Change Propagation
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `setDirty` | `setDirty(dirty: boolean): void` | Set form dirty state |
-| `setTouched` | `setTouched(touched: boolean): void` | Set form touched state |
+| `triggerValueChanged` | `triggerValueChanged(path: string): void` | Trigger value change notifications for a field and all related paths (parent, children, and global) |
 
-**Examples:**
+**Example:**
 ```javascript
-// Mark form as dirty/clean
-form.setDirty(true)
-form.setDirty(false)
-
-// Mark form as touched/untouched
-form.setTouched(true)
-form.setTouched(false)
+// Manually trigger value change propagation
+// Useful when the underlying data changes outside FormController
+form.triggerValueChanged('contacts')
+// This will trigger updates for:
+// - The 'contacts' field itself
+// - All parent paths (if any)
+// - All children paths (e.g., 'contacts.0.name', 'contacts.1.email')
+// - The global data change signal
 ```
 
 ## Path Syntax

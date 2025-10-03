@@ -18,7 +18,7 @@ EncolaJS Form Controller is a framework-agnostic form state management library t
 ### 1. Create a Form Controller
 
 ```javascript
-import { FormController } from '@encolajs/form-controller'
+import { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 import { ZodValidatorAdapter } from '@encolajs/form-controller/zod'
 import { z } from 'zod'
 
@@ -103,6 +103,8 @@ effect(() => {
 The form controller handles nested objects and arrays seamlessly using the `dot` notation:
 
 ```javascript
+import { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+
 const dataSource = new PlainObjectDataSource({
   user: {
     name: '',

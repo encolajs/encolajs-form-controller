@@ -36,15 +36,11 @@ export class NoopValidator implements FormValidator {
     return []
   }
 
-  clearFieldErrors(_path: string): void {
-  }
+  clearFieldErrors(_path: string): void {}
 
-  clearAllErrors(): void {
-  }
+  clearAllErrors(): void {}
 
-  setFieldErrors(_path: string, _errors: string[]): void {
-  }
+  setFieldErrors(_path: string, _errors: string[]): void {}
 
-  setErrors(_errors: Record<string, string[]>): void {
-  }
+  setErrors(_errors: Record<string, string[]>): void {}
 }

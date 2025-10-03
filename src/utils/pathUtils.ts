@@ -290,4 +290,3 @@ export function isNumeric(key: string): boolean {
 export function pathToKeys(path: string): string[] {
   return path === '' ? [] : path.split('.')
 }
-

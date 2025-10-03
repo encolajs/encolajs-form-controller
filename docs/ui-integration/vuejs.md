@@ -93,17 +93,15 @@ onMounted(() => {
     formState.isValid = formController.isValid()
   }))
 
-  // Error reactivity
+  // Error reactivity (only needed for form-level error tracking)
   effects.push(effect(() => {
     formController.errorsChanged()
     formState.errors = { ...formController.getErrors() }
   }))
 
-  // Data change reactivity
-  effects.push(effect(() => {
-    formController.dataChanged()
-    formState.values = { ...formController.getValues() }
-  }))
+  // Note: Individual field reactivity is now handled by HeadlessInput and HeadlessRepeatable
+  // components using path-specific change tracking (pathChanged), which prevents unnecessary
+  // re-renders when unrelated fields change
 })
 
 onUnmounted(() => {
@@ -132,7 +130,8 @@ The `HeadlessInput` component handles individual form fields. It injects the for
 
 ```vue [HeadlessInput.vue]
 <script setup>
-import { inject, computed } from 'vue'
+import { inject, computed, reactive, onMounted, onUnmounted } from 'vue'
+import { effect } from 'alien-signals'
 
 const props = defineProps({
   name: {
@@ -141,20 +140,46 @@ const props = defineProps({
   }
 })
 
-const formState = inject('formState')
+const formController = inject('formController')
 const formMethods = inject('formMethods')
 
+// Reactive field state
+const fieldState = reactive({
+  value: formMethods.getValue(props.name),
+  errors: formMethods.getErrors(props.name),
+  hasErrors: formMethods.hasErrors(props.name)
+})
+
 // Computed properties for this specific field
-const value = computed(() => {
-  return formMethods.getValue(props.name)
+const value = computed(() => fieldState.value)
+const errors = computed(() => fieldState.errors)
+const hasErrors = computed(() => fieldState.hasErrors)
+
+// Setup field-specific reactivity
+let effects = []
+
+onMounted(() => {
+  // Get field reference
+  const field = formController.field(props.name)
+
+  // Watch for changes to this specific field only
+  effects.push(effect(() => {
+    field.valueUpdated() // Subscribe to field-specific value changes
+    fieldState.value = formMethods.getValue(props.name)
+  }))
+
+  // Watch for errors on this specific field
+  effects.push(effect(() => {
+    formController.errorsChanged() // Subscribe to errors changes
+    fieldState.errors = formMethods.getErrors(props.name)
+    fieldState.hasErrors = formMethods.hasErrors(props.name)
+  }))
 })
 
-const errors = computed(() => {
-  return formMethods.getErrors(props.name)
-})
-
-const hasErrors = computed(() => {
-  return formMethods.hasErrors(props.name)
+onUnmounted(() => {
+  // Clean up effects
+  effects.forEach(dispose => dispose?.())
+  effects = []
 })
 
 // Handle input for touched state
@@ -195,7 +220,8 @@ The `HeadlessRepeatable` component manages array fields, exposing array manipula
 
 ```vue [HeadlessRepeatable.vue]
 <script setup>
-import { inject, computed } from 'vue'
+import { inject, computed, reactive, onMounted, onUnmounted } from 'vue'
+import { effect } from 'alien-signals'
 
 const props = defineProps({
   name: {
@@ -211,10 +237,35 @@ const props = defineProps({
 const formController = inject('formController')
 const formMethods = inject('formMethods')
 
+// Reactive array state
+const arrayState = reactive({
+  items: Array.isArray(formMethods.getValue(props.name))
+    ? formMethods.getValue(props.name)
+    : []
+})
+
 // Get array items
-const items = computed(() => {
-  const value = formMethods.getValue(props.name)
-  return Array.isArray(value) ? value : []
+const items = computed(() => arrayState.items)
+
+// Setup array-specific reactivity
+let effects = []
+
+onMounted(() => {
+  // Get field reference
+  const field = formController.field(props.name)
+
+  // Watch for changes to this specific array field only
+  effects.push(effect(() => {
+    field.valueUpdated() // Subscribe to field-specific value changes
+    const value = formMethods.getValue(props.name)
+    arrayState.items = Array.isArray(value) ? value : []
+  }))
+})
+
+onUnmounted(() => {
+  // Clean up effects
+  effects.forEach(dispose => dispose?.())
+  effects = []
 })
 
 // Array manipulation methods
@@ -663,6 +714,8 @@ Each headless component uses scoped slots to expose relevant data and methods to
 ### Reactivity with alien-signals
 
 The integration uses `alien-signals` effects to bridge between the FormController's signal-based reactivity and Vue's reactivity system. This ensures that Vue components automatically update when form state changes.
+
+**Field-specific Change Tracking**: Each field has its own `valueUpdated()` method that returns an incrementing number when the field's value changes. Field components subscribe only to their specific field's changes using `field.valueUpdated()`, preventing unnecessary re-renders when unrelated fields change. This is much more efficient than watching a global data change signal.
 
 ### Component Responsibilities
 

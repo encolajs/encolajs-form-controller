@@ -14,54 +14,55 @@ const props = defineProps({
 })
 
 const formController = inject('formController')
+const field = formController.field(props.name)
 
-// Get array items
 const items = ref([])
+const itemsErrors = ref([])
 
-// Array manipulation methods
 const arrayAdd = () => {
   const newItem = { ...props.defaultItem }
   formController.arrayAdd(props.name, newItem).catch(console.error)
-  formController.dataChanged()
 }
 
 const arrayRemove = (index) => {
   formController.arrayRemove(props.name, index).catch(console.error)
-  formController.dataChanged()
 }
 
 const arrayMoveUp = (index) => {
   if (index > 0) {
     formController.arrayMove(props.name, index, index - 1).catch(console.error)
-    formController.dataChanged()
   }
 }
 
 const arrayMoveDown = (index) => {
   if (index < items.value.length - 1) {
     formController.arrayMove(props.name, index, index + 1).catch(console.error)
-    formController.dataChanged()
   }
 }
 
 effect(() => {
-  formController.dataChanged()
+  field.valueUpdated()
   nextTick(() => {
     items.value = [...formController.getValue(props.name)]
   })
+})
+
+effect(() => {
+  formController.errorsChanged()
+  itemsErrors.value = formController.getErrors()[props.name] || []
 })
 </script>
 
 <template>
   <div>
-    sss
-  {{items}}
-  <slot
-    :items="items"
-    :arrayAdd="arrayAdd"
-    :arrayRemove="arrayRemove"
-    :arrayMoveUp="arrayMoveUp"
-    :arrayMoveDown="arrayMoveDown"
-  />
+
+    <slot
+      :items="items"
+      :itemsErrors="itemsErrors"
+      :arrayAdd="arrayAdd"
+      :arrayRemove="arrayRemove"
+      :arrayMoveUp="arrayMoveUp"
+      :arrayMoveDown="arrayMoveDown"
+    />
   </div>
 </template>

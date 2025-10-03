@@ -22,9 +22,7 @@ const formController = new FormController(props.dataSource, props.validator)
 const formState = reactive({
   isDirty: formController.isDirty(),
   isTouched: formController.isTouched(),
-  isValid: formController.isValid(),
-  errors: formController.getErrors(),
-  values: formController.getValues()
+  isValid: formController.isValid()
 })
 
 // Provide form controller and methods to child components
@@ -40,18 +38,6 @@ onMounted(() => {
     formState.isDirty = formController.isDirty()
     formState.isTouched = formController.isTouched()
     formState.isValid = formController.isValid()
-  }))
-
-  // Error reactivity
-  effects.push(effect(() => {
-    formController.errorsChanged()
-    formState.errors = { ...formController.getErrors() }
-  }))
-
-  // Data change reactivity
-  effects.push(effect(() => {
-    formController.dataChanged()
-    formState.values = { ...formController.getValues() }
   }))
 })
 

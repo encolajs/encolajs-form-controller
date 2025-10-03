@@ -16,6 +16,44 @@ import {
   swapFieldStates,
 } from '../utils/arrayFieldStateUtils'
 
+/**
+ * Trigger value updates for a path and all related paths (parents, children, and global)
+ */
+function triggerValueChanged(
+  path: string,
+  fieldStates: Map<string, IFieldState>,
+  globalDataChangedSignal: Signal<number>
+): void {
+  // 1. Trigger the specific field
+  const field = fieldStates.get(path)
+  if (field) {
+    field.triggerValueUpdate()
+  }
+
+  // 2. Trigger parent paths (for nested object reactivity)
+  // e.g., if "user.address.street" changes, also trigger "user.address" and "user"
+  const parts = path.split('.')
+  for (let i = parts.length - 1; i > 0; i--) {
+    const parentPath = parts.slice(0, i).join('.')
+    const parentField = fieldStates.get(parentPath)
+    if (parentField) {
+      parentField.triggerValueUpdate()
+    }
+  }
+
+  // 3. Trigger children paths (for array/object changes affecting nested fields)
+  // e.g., if "contacts" changes, also trigger "contacts.0.name", "contacts.1.email", etc.
+  const pathPrefix = path + '.'
+  fieldStates.forEach((childField, childPath) => {
+    if (childPath.startsWith(pathPrefix)) {
+      childField.triggerValueUpdate()
+    }
+  })
+
+  // 4. Trigger global data change signal (for backward compatibility)
+  globalDataChangedSignal(globalDataChangedSignal() + 1)
+}
+
 function createFieldState(
   formController: FormController,
   path: string
@@ -26,9 +64,12 @@ function createFieldState(
   const isValidating = signal(false)
   const wasValidated = signal(false)
 
+  // Value change tracking signal
+  const valueChanged = signal(0)
+
   // Computed value from data source
   const value = computed(() => {
-    formController.dataChanged() // Subscribe to data changes
+    valueChanged() // Subscribe to this field's changes
     return formController.getValue(path)
   }) as ISignal<unknown>
 
@@ -50,6 +91,8 @@ function createFieldState(
     wasValidated,
     errors,
     isValid,
+    valueUpdated: () => valueChanged(),
+    triggerValueUpdate: () => valueChanged(valueChanged() + 1),
   }
 }
 
@@ -133,17 +176,20 @@ export class FormController implements IFormController {
     this.dataSource.set(path, value)
 
     // Ensure field state exists and update it
-    const fieldState = this.field(path) // This creates the field state if it doesn't exist
-    if (dirty) {
+    const fieldState = this.field(path)
+
+    if (dirty && !fieldState.isDirty()) {
+      // once a field is dirty, you can't make it clean
       fieldState.isDirty(true)
     }
 
-    if (touch) {
+    if (touch && !fieldState.isTouched()) {
+      // once a field is touched, you can't make it untouched
       fieldState.isTouched(true)
     }
 
-    // Trigger data source reactivity
-    this.triggerDataUpdate()
+    // Trigger value change for this field and all related paths
+    this.triggerValueChanged(path)
 
     // Determine if validation should be triggered
     // Priority: explicit validate option > dirty=true triggers validation
@@ -252,8 +298,13 @@ export class FormController implements IFormController {
       fieldState.wasValidated(false)
     })
 
-    // Trigger data update
-    this.triggerDataUpdate()
+    // Trigger value changes for all fields (use empty string to trigger all)
+    this.fieldStates.forEach((fieldState) => {
+      fieldState.triggerValueUpdate()
+    })
+
+    // Trigger global data change
+    this.dataChanged(this.dataChanged() + 1)
   }
 
   destroy(): void {
@@ -288,7 +339,10 @@ export class FormController implements IFormController {
     const arrayField = this.field(arrayPath)
     arrayField.isDirty(true)
 
-    this.triggerDataUpdate()
+    // Trigger value change for the array and all related paths
+    this.triggerValueChanged(arrayPath)
+
+    this.validateField(arrayPath)
   }
 
   async arrayRemove(arrayPath: string, index: number): Promise<void> {
@@ -311,7 +365,10 @@ export class FormController implements IFormController {
     const arrayField = this.field(arrayPath)
     arrayField.isDirty(true)
 
-    this.triggerDataUpdate()
+    // Trigger value change for the array and all related paths
+    this.triggerValueChanged(arrayPath)
+
+    this.validateField(arrayPath)
   }
 
   async arrayMove(
@@ -339,7 +396,10 @@ export class FormController implements IFormController {
     const arrayField = this.field(arrayPath)
     arrayField.isDirty(true)
 
-    this.triggerDataUpdate()
+    // Trigger value change for the array and all related paths
+    this.triggerValueChanged(arrayPath)
+
+    this.validateField(arrayPath)
   }
 
   setErrors(errors: Record<string, string[]>): void {
@@ -446,9 +506,14 @@ export class FormController implements IFormController {
   }
 
   /**
-   * Trigger data update (to notify computed values)
+   * Trigger value change notifications for a field and all related paths
+   * This includes:
+   * - The field itself
+   * - All parent paths (for nested object reactivity)
+   * - All child paths (for array/object changes affecting nested fields)
+   * - Global data change signal (for backward compatibility)
    */
-  triggerDataUpdate(): void {
-    this.dataChanged(this.dataChanged() + 1)
+  triggerValueChanged(path: string): void {
+    triggerValueChanged(path, this.fieldStates, this.dataChanged)
   }
 }

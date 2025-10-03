@@ -10,22 +10,26 @@ const props = defineProps({
 })
 
 const formController = inject('formController')
+const field = formController.field(props.name)
 
 // Computed properties for this specific field
-const value = ref(formController.getValue(props.name))
+const value = ref(null)
 
-const errors = computed(() => {
-  return formController.getErrors(props.name)
-})
+const errors = ref([])
 
 const hasErrors = computed(() => {
-  return formController.getErrors()[props.name]?.length
+  return errors.value.length
 })
 
 effect(() => {
-  formController.dataChanged()
-  console.log('dataChanged effect', props.name);
+  field.valueUpdated()
   value.value = formController.getValue(props.name)
+  errors.value = formController.getErrors()[props.name] || []
+})
+
+effect(() => {
+  formController.errorsChanged()
+  errors.value = formController.getErrors()[props.name] || []
 })
 
 // Handle input for touched state

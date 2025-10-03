@@ -36,6 +36,7 @@ const rules = {
   'confirmPassword': 'required|same_as:@password',
   'profile.bio': 'max_length:500',
   'profile.website': 'url',
+  'contacts': 'array_min:2',
   'contacts.*.name': 'required',
   'contacts.*.email': 'required|email'
 }
@@ -299,7 +300,7 @@ const getInputValue = (event) => {
             <HeadlessRepeatable
               name="contacts"
               :default-item="contactDefault"
-              v-slot="{ items, arrayAdd, arrayRemove, arrayMoveUp, arrayMoveDown }"
+              v-slot="{ items, itemsErrors, arrayAdd, arrayRemove, arrayMoveUp, arrayMoveDown }"
             >
               <div>
                 <div class="flex justify-between items-center mb-4">
@@ -312,10 +313,12 @@ const getInputValue = (event) => {
                     Add Contact
                   </button>
                 </div>
-{{items}}
+                <div v-if="itemsErrors[0]" class="text-red-500 text-sm mb-4">
+                  {{ itemsErrors[0] }}
+                </div>
                 <div class="space-y-4">
                   <div
-                    v-for="(contact, index) in items"
+                    v-for="(contact, index) in [...items]"
                     :key="`contact-${index}`"
                     class="border border-gray-200 rounded-lg p-4 space-y-4"
                   >

@@ -93,7 +93,7 @@ export interface FormValidator {
 }
 
 /**
- * Field state interface providing reactive field state without methods
+ * Field state interface providing reactive field state and change tracking
  */
 export interface IFieldState {
   /** Field path */
@@ -119,6 +119,18 @@ export interface IFieldState {
 
   /** Current field validation errors */
   readonly errors: ISignal<string[]>
+
+  /**
+   * Subscribe to value changes for this field
+   * Returns an incrementing number each time the field value is updated
+   */
+  valueUpdated(): number
+
+  /**
+   * Trigger a value update notification for this field
+   * @internal - Should only be called by FormController
+   */
+  triggerValueUpdate(): void
 }
 
 /**
@@ -189,6 +201,12 @@ export interface IFormController {
 
   /** Set form-level errors */
   setErrors(errors: Record<string, string[]>): void
+
+  /**
+   * Trigger value change notifications for a field and all related paths
+   * This includes the field itself, all parent paths, all child paths, and the global data change signal
+   */
+  triggerValueChanged(path: string): void
 }
 
 /**

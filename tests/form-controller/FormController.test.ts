@@ -939,4 +939,233 @@ describe('FormController', () => {
       expect(shiftedField3.errors()).toEqual([])
     })
   })
+
+  describe('field-specific change tracking', () => {
+    it('should only trigger valueUpdated for the specific field being updated', () => {
+      const nameChanges: number[] = []
+      const emailChanges: number[] = []
+
+      // Get field references
+      const nameField = formController.field('name')
+      const emailField = formController.field('email')
+
+      // Subscribe to field-specific changes
+      const disposeNameEffect = effect(() => {
+        nameChanges.push(nameField.valueUpdated())
+      })
+
+      const disposeEmailEffect = effect(() => {
+        emailChanges.push(emailField.valueUpdated())
+      })
+
+      // Both should have initial value
+      expect(nameChanges).toEqual([0])
+      expect(emailChanges).toEqual([0])
+
+      // Update name field
+      formController.setValue('name', 'Jane')
+
+      // Only name field should change
+      expect(nameChanges).toEqual([0, 1])
+      expect(emailChanges).toEqual([0]) // Should not change
+
+      // Update email field
+      formController.setValue('email', 'jane@example.com')
+
+      // Only email field should change
+      expect(nameChanges).toEqual([0, 1]) // Should not change
+      expect(emailChanges).toEqual([0, 1])
+
+      // Cleanup
+      disposeNameEffect()
+      disposeEmailEffect()
+    })
+
+    it('should trigger valueUpdated for parent fields when nested field changes', () => {
+      const addressChanges: number[] = []
+      const addressStreetChanges: number[] = []
+
+      // Get field references (create parent field first)
+      const addressField = formController.field('address')
+      const addressStreetField = formController.field('address.street')
+
+      // Subscribe to both parent and child fields
+      const disposeAddressEffect = effect(() => {
+        addressChanges.push(addressField.valueUpdated())
+      })
+
+      const disposeStreetEffect = effect(() => {
+        addressStreetChanges.push(addressStreetField.valueUpdated())
+      })
+
+      // Both should have initial value
+      expect(addressChanges).toEqual([0])
+      expect(addressStreetChanges).toEqual([0])
+
+      // Update nested field
+      formController.setValue('address.street', '456 Oak Ave')
+
+      // Both parent and child fields should change
+      expect(addressStreetChanges).toEqual([0, 1])
+      expect(addressChanges).toEqual([0, 1]) // Parent field should also change
+
+      // Cleanup
+      disposeAddressEffect()
+      disposeStreetEffect()
+    })
+
+    it('should trigger valueUpdated for array field when array operations occur', async () => {
+      const itemsChanges: number[] = []
+
+      // Get field reference
+      const itemsField = formController.field('items')
+
+      // Subscribe to array field
+      const disposeEffect = effect(() => {
+        itemsChanges.push(itemsField.valueUpdated())
+      })
+
+      // Should have initial value
+      expect(itemsChanges).toEqual([0])
+
+      // Add item to array
+      await formController.arrayAdd('items', { price: 300, quantity: 1 })
+
+      // Array field should change
+      expect(itemsChanges).toEqual([0, 1])
+
+      // Remove item from array
+      await formController.arrayRemove('items', 0)
+
+      // Array field should change again
+      expect(itemsChanges).toEqual([0, 1, 2])
+
+      // Cleanup
+      disposeEffect()
+    })
+
+    it('should trigger valueUpdated for all fields on reset', () => {
+      const nameChanges: number[] = []
+      const emailChanges: number[] = []
+
+      // Get field references
+      const nameField = formController.field('name')
+      const emailField = formController.field('email')
+
+      // Subscribe to field-specific changes
+      const disposeNameEffect = effect(() => {
+        nameChanges.push(nameField.valueUpdated())
+      })
+
+      const disposeEmailEffect = effect(() => {
+        emailChanges.push(emailField.valueUpdated())
+      })
+
+      // Initial values
+      expect(nameChanges).toEqual([0])
+      expect(emailChanges).toEqual([0])
+
+      // Update both fields
+      formController.setValue('name', 'Jane')
+      formController.setValue('email', 'jane@example.com')
+
+      expect(nameChanges).toEqual([0, 1])
+      expect(emailChanges).toEqual([0, 1])
+
+      // Reset form
+      formController.reset()
+
+      // Both fields should change
+      expect(nameChanges).toEqual([0, 1, 2])
+      expect(emailChanges).toEqual([0, 1, 2])
+
+      // Cleanup
+      disposeNameEffect()
+      disposeEmailEffect()
+    })
+
+    it('should trigger valueUpdated for child fields when parent changes', () => {
+      const addressChanges: number[] = []
+      const addressStreetChanges: number[] = []
+      const addressCityChanges: number[] = []
+
+      // Get field references
+      const addressField = formController.field('address')
+      const addressStreetField = formController.field('address.street')
+      const addressCityField = formController.field('address.city')
+
+      // Subscribe to fields
+      const disposeAddressEffect = effect(() => {
+        addressChanges.push(addressField.valueUpdated())
+      })
+
+      const disposeStreetEffect = effect(() => {
+        addressStreetChanges.push(addressStreetField.valueUpdated())
+      })
+
+      const disposeCityEffect = effect(() => {
+        addressCityChanges.push(addressCityField.valueUpdated())
+      })
+
+      // Initial values
+      expect(addressChanges).toEqual([0])
+      expect(addressStreetChanges).toEqual([0])
+      expect(addressCityChanges).toEqual([0])
+
+      // Trigger change on parent (simulating array reorder or object replacement)
+      formController.triggerValueChanged('address')
+
+      // Parent and ALL children should change
+      expect(addressChanges).toEqual([0, 1])
+      expect(addressStreetChanges).toEqual([0, 1]) // Child should change
+      expect(addressCityChanges).toEqual([0, 1]) // Child should change
+
+      // Cleanup
+      disposeAddressEffect()
+      disposeStreetEffect()
+      disposeCityEffect()
+    })
+
+    it('should trigger valueUpdated for array item fields when array changes', async () => {
+      const itemsChanges: number[] = []
+      const item0PriceChanges: number[] = []
+      const item1PriceChanges: number[] = []
+
+      // Get field references
+      const itemsField = formController.field('items')
+      const item0PriceField = formController.field('items.0.price')
+      const item1PriceField = formController.field('items.1.price')
+
+      // Subscribe to fields
+      const disposeItemsEffect = effect(() => {
+        itemsChanges.push(itemsField.valueUpdated())
+      })
+
+      const disposeItem0Effect = effect(() => {
+        item0PriceChanges.push(item0PriceField.valueUpdated())
+      })
+
+      const disposeItem1Effect = effect(() => {
+        item1PriceChanges.push(item1PriceField.valueUpdated())
+      })
+
+      // Initial values
+      expect(itemsChanges).toEqual([0])
+      expect(item0PriceChanges).toEqual([0])
+      expect(item1PriceChanges).toEqual([0])
+
+      // Move array items (this changes order, so all children should update)
+      await formController.arrayMove('items', 0, 1)
+
+      // Array and ALL item fields should change
+      expect(itemsChanges.length).toBeGreaterThan(1)
+      expect(item0PriceChanges.length).toBeGreaterThan(1) // Now points to different data
+      expect(item1PriceChanges.length).toBeGreaterThan(1) // Now points to different data
+
+      // Cleanup
+      disposeItemsEffect()
+      disposeItem0Effect()
+      disposeItem1Effect()
+    })
+  })
 })

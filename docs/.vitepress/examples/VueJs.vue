@@ -85,8 +85,8 @@ const getInputValue = (event) => {
 
 <template>
   <HeadlessForm :data-source="dataSource" :validator="validator" v-slot="{ state, controller }">
-    <div class="max-w-4xl mx-auto px-4">
-      <div class="bg-white rounded-lg shadow-lg p-8">
+    <div class="bg-gray-100 min-h-screen p-4">
+      <div class="mb-8">
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-gray-900 mb-2">User Registration Form</h1>
           <p class="text-gray-600">Complete form with EncolaJS Validator and VueJS headless components</p>
@@ -303,8 +303,8 @@ const getInputValue = (event) => {
               v-slot="{ items, itemsErrors, arrayAdd, arrayRemove, arrayMoveUp, arrayMoveDown }"
             >
               <div>
-                <div class="flex justify-between items-center mb-4">
-                  <h2 class="text-xl font-semibold text-gray-900">Emergency Contacts</h2>
+                <h2 class="mb-2 flex items-center justify-between">
+                  <div class="text-xl font-semibold text-gray-900" style="margin-top: 0">Emergency Contacts</div>
                   <button
                     type="button"
                     @click="arrayAdd"
@@ -312,7 +312,7 @@ const getInputValue = (event) => {
                   >
                     Add Contact
                   </button>
-                </div>
+                </h2>
                 <div v-if="itemsErrors[0]" class="text-red-500 text-sm mb-4">
                   {{ itemsErrors[0] }}
                 </div>

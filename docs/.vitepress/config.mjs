@@ -50,9 +50,12 @@ export default defineConfig({
           text: 'UI Integration Examples',
           link: '/ui-integration/',
           items: [
-            { text: 'Vanilla JS', link: '/ui-integration/vanilla-javascript' },
             { text: 'VueJS', link: '/ui-integration/vuejs' },
             { text: 'AlpineJS', link: '/ui-integration/alpinejs' },
+            { text: 'Vanilla JS', link: '/ui-integration/vanilla-javascript' },
+            { text: 'React (TBD)', link: '/ui-integration/react' },
+            { text: 'Svelte (TBD)', link: '/ui-integration/svelte' },
+            { text: 'SolidJS (TBD)', link: '/ui-integration/solidjs' },
           ],
         },
       ],

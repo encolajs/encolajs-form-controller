@@ -490,18 +490,15 @@ onMounted(() => {
 
     <!-- Contacts Array -->
     <section>
-      <div class="mb-2">
-        <h2 class="text-xl font-semibold text-gray-900">Emergency Contacts</h2>
-        <p>
-          <strong>Important!</strong> The contacts list is rendered via Javascript and because of that the focus on the field is lost. A real-world implementation would account for that by implementing a better rendering algorithm.
-        </p>
+      <h2 class="mb-2 flex items-center justify-between">
+        <div class="text-xl font-semibold text-gray-900" style="margin-top: 0">Emergency Contacts</div>
         <button type="button"
                 data-array-action="add"
                 data-array-path="contacts"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
           Add Contact
         </button>
-      </div>
+      </h2>
 
       <div data-array-list="contacts" class="space-y-4">
         <!-- Dynamic contact list will be rendered here -->

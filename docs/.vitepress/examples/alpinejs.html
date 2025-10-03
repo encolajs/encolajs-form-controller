@@ -197,14 +197,14 @@
 
             <!-- Contacts Array -->
             <section>
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-900">Emergency Contacts</h2>
+                <h2 class="mb-2 flex items-center justify-between">
+                    <div class="text-xl font-semibold text-gray-900" style="margin-top: 0">Emergency Contacts</div>
                     <button type="button"
                             x-on:click="arrayAdd('contacts')"
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
                         Add Contact
                     </button>
-                </div>
+                </h2>
 
                 <template x-if="formValues" class="space-y-4">
                     <template x-for="(contact, index) in formValues.contacts" x-bind:key="`contact-${index}`" >

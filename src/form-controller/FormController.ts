@@ -132,11 +132,6 @@ export class FormController implements IFormController {
     // Update the data source
     this.dataSource.set(path, value)
 
-    // Trigger data source reactivity
-    this.triggerDataUpdate()
-
-    // Form-level state is now computed from field states
-
     // Ensure field state exists and update it
     const fieldState = this.field(path) // This creates the field state if it doesn't exist
     if (dirty) {
@@ -146,6 +141,9 @@ export class FormController implements IFormController {
     if (touch) {
       fieldState.isTouched(true)
     }
+
+    // Trigger data source reactivity
+    this.triggerDataUpdate()
 
     // Determine if validation should be triggered
     // Priority: explicit validate option > dirty=true triggers validation

@@ -12,7 +12,7 @@ const validatorFactory = new ValidatorFactory()
 const userRules = {
   'name': 'required|min_length:2|max_length:50',
   'email': 'required|email',
-  'age': 'required|integer|min:18|max:120',
+  'age': 'required|integer|gte:18|lte:120',
   'password': 'required|min_length:8|matches:^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])',
   'confirmPassword': 'required|same_as:@password',
   'profile.bio': 'max_length:500',

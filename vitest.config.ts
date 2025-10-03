@@ -15,6 +15,11 @@ export default defineConfig({
         '**/tests/',
         '**/*.d.ts',
         '**/*.config.*',
+        '**/encola.ts',
+        '**/zod.ts',
+        '**/yup.ts',
+        '**/valibot.ts',
+        '**/src/validators/NoopValidator.ts',
         '**/index.ts' // exclude barrel exports from coverage
       ]
     }

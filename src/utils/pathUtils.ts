@@ -11,7 +11,7 @@ export function getByPath(obj: any, path: string): unknown {
     return path === '' ? obj : undefined
   }
 
-  const keys = path.split('.')
+  const keys = pathToKeys(path)
   let current = obj
 
   for (const key of keys) {
@@ -20,7 +20,7 @@ export function getByPath(obj: any, path: string): unknown {
     }
 
     // Handle array indices
-    if (Array.isArray(current) && /^\d+$/.test(key)) {
+    if (Array.isArray(current) && isNumeric(key)) {
       const index = parseInt(key, 10)
       current = current[index]
     } else {
@@ -40,7 +40,7 @@ export function setByPath(obj: any, path: string, value: unknown): void {
     return
   }
 
-  const keys = path.split('.')
+  const keys = pathToKeys(path)
   let current = obj
 
   for (let i = 0; i < keys.length - 1; i++) {
@@ -48,7 +48,7 @@ export function setByPath(obj: any, path: string, value: unknown): void {
     const nextKey = keys[i + 1]
 
     // Determine if next level should be an array or object
-    const isNextKeyNumeric = /^\d+$/.test(nextKey)
+    const isNextKeyNumeric = isNumeric(nextKey)
 
     if (current[key] == null) {
       // Create new object or array based on next key
@@ -59,7 +59,7 @@ export function setByPath(obj: any, path: string, value: unknown): void {
     }
 
     // Handle array extension
-    if (Array.isArray(current) && /^\d+$/.test(key)) {
+    if (Array.isArray(current) && isNumeric(key)) {
       const index = parseInt(key, 10)
       // Extend array if necessary
       while (current.length <= index) {
@@ -77,7 +77,7 @@ export function setByPath(obj: any, path: string, value: unknown): void {
   const finalKey = keys[keys.length - 1]
 
   // Handle final assignment
-  if (Array.isArray(current) && /^\d+$/.test(finalKey)) {
+  if (Array.isArray(current) && isNumeric(finalKey)) {
     const index = parseInt(finalKey, 10)
     // Extend array if necessary
     while (current.length <= index) {
@@ -101,7 +101,7 @@ export function hasPath(obj: any, path: string): boolean {
     return true
   }
 
-  const keys = path.split('.')
+  const keys = pathToKeys(path)
   let current = obj
 
   for (const key of keys) {
@@ -110,7 +110,7 @@ export function hasPath(obj: any, path: string): boolean {
     }
 
     // Check property existence
-    if (Array.isArray(current) && /^\d+$/.test(key)) {
+    if (Array.isArray(current) && isNumeric(key)) {
       const index = parseInt(key, 10)
       if (index >= current.length) {
         return false
@@ -135,7 +135,7 @@ export function removeByPath(obj: any, path: string): void {
     return
   }
 
-  const keys = path.split('.')
+  const keys = pathToKeys(path)
   let current = obj
 
   // Navigate to parent of target property
@@ -146,7 +146,7 @@ export function removeByPath(obj: any, path: string): void {
       return
     }
 
-    if (Array.isArray(current) && /^\d+$/.test(key)) {
+    if (Array.isArray(current) && isNumeric(key)) {
       const index = parseInt(key, 10)
       if (index >= current.length) {
         return
@@ -164,7 +164,7 @@ export function removeByPath(obj: any, path: string): void {
 
   // Remove the property
   if (current && typeof current === 'object') {
-    if (Array.isArray(current) && /^\d+$/.test(finalKey)) {
+    if (Array.isArray(current) && isNumeric(finalKey)) {
       const index = parseInt(finalKey, 10)
       if (index < current.length) {
         delete current[index] // Creates sparse array
@@ -184,7 +184,7 @@ export function createPath(obj: any, path: string): void {
     return
   }
 
-  const keys = path.split('.')
+  const keys = pathToKeys(path)
   let current = obj
 
   for (let i = 0; i < keys.length; i++) {
@@ -193,7 +193,7 @@ export function createPath(obj: any, path: string): void {
 
     if (!isLastKey) {
       const nextKey = keys[i + 1]
-      const isNextKeyNumeric = /^\d+$/.test(nextKey)
+      const isNextKeyNumeric = isNumeric(nextKey)
 
       if (current[key] == null) {
         current[key] = isNextKeyNumeric ? [] : {}
@@ -202,7 +202,7 @@ export function createPath(obj: any, path: string): void {
       }
 
       // Handle array extension
-      if (Array.isArray(current) && /^\d+$/.test(key)) {
+      if (Array.isArray(current) && isNumeric(key)) {
         const index = parseInt(key, 10)
         while (current.length <= index) {
           current.push(undefined)
@@ -216,7 +216,7 @@ export function createPath(obj: any, path: string): void {
       }
     } else {
       // Last key - ensure container exists
-      if (Array.isArray(current) && /^\d+$/.test(key)) {
+      if (Array.isArray(current) && isNumeric(key)) {
         const index = parseInt(key, 10)
         while (current.length <= index) {
           current.push(undefined)
@@ -280,7 +280,7 @@ export function deepClone<T>(obj: T, seen = new WeakMap()): T {
 /**
  * Check if a string represents a numeric array index
  */
-export function isNumericKey(key: string): boolean {
+export function isNumeric(key: string): boolean {
   return /^\d+$/.test(key)
 }
 
@@ -291,9 +291,3 @@ export function pathToKeys(path: string): string[] {
   return path === '' ? [] : path.split('.')
 }
 
-/**
- * Convert an array of keys to a path string
- */
-export function keysToPath(keys: string[]): string {
-  return keys.join('.')
-}

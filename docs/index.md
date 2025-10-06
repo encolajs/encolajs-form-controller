@@ -22,7 +22,7 @@ hero:
 features:
   - icon: ⚡
     title: Framework Agnostic
-    details: Works with Vue 3, React, Alpine.js, or any JavaScript framework using alien-signals for reactivity.
+    details: Works with Vue 3, React, Alpine.js, or vanilla JavaScript. We're using `alien-signals` for reactivity.
   - icon: 🔌
     title: Multiple Validation Adapters
     details: Built-in support for Zod, Yup, Valibot, and EncolaJS Validator. Easily extensible for custom validators.

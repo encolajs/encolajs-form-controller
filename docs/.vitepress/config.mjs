@@ -16,6 +16,7 @@ export default defineConfig({
     },
     logo: '/logo.png',
     socialLinks: [
+      { icon: 'x', link: 'https://x.com/encolajs' },
       { icon: 'github', link: 'https://github.com/encolajs/encolajs-form-controller' },
     ],
     nav: [

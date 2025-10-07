@@ -137,7 +137,7 @@ const advancedSchema = v.pipe(
 
 ```javascript
 // Add a new contact
-await form.arrayAdd('contacts', { name: '', email: '' })
+await form.arrayAppend('contacts', { name: '', email: '' })
 
 // Remove contact at index 1
 await form.arrayRemove('contacts', 1)

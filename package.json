@@ -8,25 +8,25 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.umd.js"
     },
     "./zod": {
-      "import": "./dist/zod.es.js",
-      "types": "./dist/zod.d.ts"
+      "types": "./dist/zod.d.ts",
+      "import": "./dist/zod.es.js"
     },
     "./yup": {
-      "import": "./dist/yup.es.js",
-      "types": "./dist/yup.d.ts"
+      "types": "./dist/yup.d.ts",
+      "import": "./dist/yup.es.js"
     },
     "./valibot": {
-      "import": "./dist/valibot.es.js",
-      "types": "./dist/valibot.d.ts"
+      "types": "./dist/valibot.d.ts",
+      "import": "./dist/valibot.es.js"
     },
     "./encola": {
-      "import": "./dist/encola.es.js",
-      "types": "./dist/encola.d.ts"
+      "types": "./dist/encola.d.ts",
+      "import": "./dist/encola.es.js"
     }
   },
   "unpkg": "./dist/index.umd.js",

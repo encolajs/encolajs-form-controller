@@ -120,7 +120,7 @@ describe('FormController Integration', () => {
         price: 300,
         tags: ['electronics', 'gaming'],
       }
-      formController.arrayAdd('products', newProduct)
+      formController.arrayAppend('products', newProduct)
 
       expect(dataSource.get('products')).toHaveLength(3)
       expect(formController.field('products.2.name').value()).toBe('Product 3')
@@ -151,7 +151,7 @@ describe('FormController Integration', () => {
       expect(emailNotifField.value()).toBe(false)
 
       // Add new preference
-      formController.arrayAdd('settings.preferences', 'compact-view')
+      formController.arrayAppend('settings.preferences', 'compact-view')
       expect(dataSource.get('settings.preferences')).toContain('compact-view')
 
       // Update nested notification setting
@@ -288,18 +288,18 @@ describe('FormController Integration', () => {
       expect(emailField.errors()).toEqual(['Email not available'])
     })
 
-    it('should handle form submission with validation', async () => {
+    it('should handle form validation workflow', async () => {
       // Set up form with validation errors
       validator.mockFormValidation({
         'user.name': ['Name is required'],
         'products.0.price': ['Price must be positive'],
       })
 
-      // Attempt to submit
-      const result = await formController.submit()
+      // Attempt to validate
+      const result = await formController.validate()
 
       expect(result).toBe(false)
-      expect(formController.isSubmitting()).toBe(false)
+      expect(formController.isValid()).toBe(false)
       expect(formController.field('user.name').errors()).toEqual([
         'Name is required',
       ])
@@ -310,9 +310,10 @@ describe('FormController Integration', () => {
       // Fix validation errors
       validator.mockFormValidation({})
 
-      // Submit again
-      const result2 = await formController.submit()
+      // Validate again
+      const result2 = await formController.validate()
       expect(result2).toBe(true)
+      expect(formController.isValid()).toBe(true)
     })
   })
 
@@ -354,11 +355,11 @@ describe('FormController Integration', () => {
         price: 1500,
         tags: ['electronics', 'gaming', 'computer'],
       }
-      formController.arrayAdd('products', newProduct)
+      formController.arrayAppend('products', newProduct)
 
       // Update tags for first product
-      formController.arrayAdd('products.0.tags', 'bestseller')
-      formController.arrayAdd('products.0.tags', 'featured')
+      formController.arrayAppend('products.0.tags', 'bestseller')
+      formController.arrayAppend('products.0.tags', 'featured')
 
       expect(formController.field('products.0.tags').value()).toContain(
         'bestseller'
@@ -380,7 +381,7 @@ describe('FormController Integration', () => {
 
       // Perform multiple operations
       await formController.setValue('user.name', 'Updated Name')
-      formController.arrayAdd('products', {
+      formController.arrayAppend('products', {
         id: 3,
         name: 'New Product',
         price: 300,
@@ -414,7 +415,9 @@ describe('FormController Integration', () => {
 
     it('should handle array operations on non-arrays', () => {
       // Try array operations on non-array field
-      expect(() => formController.arrayAdd('user.name', 'test')).not.toThrow()
+      expect(() =>
+        formController.arrayAppend('user.name', 'test')
+      ).not.toThrow()
       expect(() => formController.arrayRemove('user.name', 0)).not.toThrow()
       expect(() => formController.arrayMove('user.name', 0, 1)).not.toThrow()
     })
@@ -470,7 +473,7 @@ describe('FormController Integration', () => {
       // Perform operations on large dataset
       await largeController.setValue('items.500.name', 'Updated Item 500')
       await largeController.validate()
-      largeController.arrayAdd(
+      largeController.arrayAppend(
         'items',
         { id: 1000, name: 'New Item', value: 500, tags: [] },
         501

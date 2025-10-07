@@ -300,14 +300,14 @@ const getInputValue = (event) => {
             <HeadlessRepeatable
               name="contacts"
               :default-item="contactDefault"
-              v-slot="{ items, itemsErrors, arrayAdd, arrayRemove, arrayMoveUp, arrayMoveDown }"
+              v-slot="{ items, itemsErrors, arrayAppend, arrayRemove, arrayMoveUp, arrayMoveDown }"
             >
               <div>
                 <h2 class="mb-2 flex items-center justify-between">
                   <div class="text-xl font-semibold text-gray-900" style="margin-top: 0">Emergency Contacts</div>
                   <button
                     type="button"
-                    @click="arrayAdd"
+                    @click="arrayAppend"
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm"
                   >
                     Add Contact

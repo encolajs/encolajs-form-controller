@@ -167,7 +167,7 @@ function bindFormToController(formElement, formController, options = {}) {
         switch (action) {
             case 'add':
                 const newItem = arrayDefaults[arrayPath] || {}
-                formController.arrayAdd(arrayPath, newItem).catch(console.error)
+                formController.arrayAppend(arrayPath, newItem).catch(console.error)
                 break
 
             case 'remove':

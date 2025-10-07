@@ -177,19 +177,23 @@ form.destroy() // Call when component unmounts
 
 ### Array Operations
 
-| Method | Signature | Description |
-|--------|-----------|-------------|
-| `arrayAdd` | `arrayAdd(arrayPath: string, item: unknown, index?: number): Promise<void>` | Add item to array field |
-| `arrayRemove` | `arrayRemove(arrayPath: string, index: number): Promise<void>` | Remove item from array field |
-| `arrayMove` | `arrayMove(arrayPath: string, fromIndex: number, toIndex: number): Promise<void>` | Move item within array field |
+| Method         | Signature                                                                                | Description                              |
+|----------------|------------------------------------------------------------------------------------------|------------------------------------------|
+| `arrayAppend`  | `arrayAppend(arrayPath: string, item: unknown, validate: boolean = true): Promise<void>` | Add item to array field at the end       |
+| `arrayPrepend` | `arrayAppend(arrayPath: string, item: unknown, validate: boolean = true): Promise<void>`                           | Add item to array field at the beginning |
+| `arrayInsert`  | `arrayAppend(arrayPath: string, index: number, item: unknown, validate: boolean = true): Promise<void>`            | Add item to array field at the beginning |
+| `arrayRemove`  | `arrayRemove(arrayPath: string, index: number, validate: boolean = true): Promise<void>`                           | Remove item from array field             |
+| `arrayMove`    | `arrayMove(arrayPath: string, fromIndex: number, toIndex: number, validate: boolean = true): Promise<void>`        | Move item within array field             |
+
+The `validate` parameter is used for triggering validation at the array-path level. This is for situations where you need a minimum/maximum numbers of items present in the array.
 
 **Examples:**
 ```javascript
 // Add item to end of array
-await form.arrayAdd('tags', 'javascript')
+await form.arrayAppend('tags', 'javascript')
 
 // Insert item at specific position
-await form.arrayAdd('items', { name: 'New Item' }, 1)
+await form.arrayInsert('items', 1, { name: 'New Item' })
 
 // Remove item at index
 await form.arrayRemove('tags', 0)

@@ -17,6 +17,7 @@ const userRules = {
   'confirmPassword': 'required|same_as:@password',
   'profile.bio': 'max_length:500',
   'profile.website': 'url',
+  'contacts': 'array_min:2',
   'contacts.*.name': 'required',
   'contacts.*.email': 'required|email'
 }
@@ -151,7 +152,7 @@ function bindFormToController(formElement, formController, options = {}) {
     switch (action) {
       case 'add':
         const newItem = arrayDefaults[arrayPath] || {}
-        formController.arrayAdd(arrayPath, {...newItem}).catch(console.error)
+        formController.arrayAppend(arrayPath, {...newItem}).catch(console.error)
         break
 
       case 'remove':
@@ -499,6 +500,8 @@ onMounted(() => {
           Add Contact
         </button>
       </h2>
+
+      <div data-error="contacts"></div>
 
       <div data-array-list="contacts" class="space-y-4">
         <!-- Dynamic contact list will be rendered here -->

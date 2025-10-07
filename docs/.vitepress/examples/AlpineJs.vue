@@ -140,9 +140,9 @@ onMounted(async () => {
       },
 
       // Array manipulation methods
-      arrayAdd(arrayPath) {
+      arrayAppend(arrayPath) {
         const newItem = arrayDefaults[arrayPath] || {}
-        formController.arrayAdd(arrayPath, {...newItem}).catch(console.error)
+        formController.arrayAppend(arrayPath, {...newItem}).catch(console.error)
       },
 
       arrayRemove(arrayPath, index) {

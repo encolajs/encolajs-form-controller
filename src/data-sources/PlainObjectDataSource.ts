@@ -1,18 +1,12 @@
 import type { DataSource } from '../types'
-import {
-  getByPath,
-  setByPath,
-  hasPath,
-  removeByPath,
-  deepClone,
-} from '../utils/pathUtils'
+import { getByPath, setByPath, hasPath, removeByPath, deepClone } from '@/utils'
 
 /**
  * Plain object data source implementation
  * Manages form data using a plain JavaScript object with deep path support
  */
 export class PlainObjectDataSource implements DataSource {
-  private data: Record<string, unknown>
+  private readonly data: Record<string, unknown>
 
   constructor(initialData: Record<string, unknown> = {}) {
     this.data = initialData
@@ -30,13 +24,13 @@ export class PlainObjectDataSource implements DataSource {
     return this.data
   }
 
-  arrayPush(arrayPath: string, value: unknown): void {
-    const array = this.get(arrayPath)
-    if (Array.isArray(array)) {
-      array.push(value)
-    } else {
-      this.set(arrayPath, [value])
-    }
+  arrayAppend(arrayPath: string, value: unknown): void {
+    const array = (this.get(arrayPath) || []) as Array<unknown>
+    this.arrayInsert(arrayPath, array.length, value)
+  }
+
+  arrayPrepend(arrayPath: string, value: unknown): void {
+    this.arrayInsert(arrayPath, 0, value)
   }
 
   arrayInsert(arrayPath: string, index: number, value: unknown): void {

@@ -78,7 +78,7 @@ describe('FormController - Repeatable Field Validation', () => {
 
     // Step 3: Add a new item to the end of the array
     const newItem = { name: 'New Item', price: 20 }
-    await formController.arrayAdd('orderItems', newItem)
+    await formController.arrayAppend('orderItems', newItem)
 
     // Verify we now have 2 items
     const orderItems = formController.getValue('orderItems') as any[]
@@ -113,11 +113,11 @@ describe('FormController - Repeatable Field Validation', () => {
 
   it('should handle validation state correctly when middle item is removed', async () => {
     // Start with 3 items
-    await formController.arrayAdd('orderItems', {
+    await formController.arrayAppend('orderItems', {
       name: 'Second Item',
       price: 15,
     })
-    await formController.arrayAdd('orderItems', { name: '', price: 25 }) // Invalid third item
+    await formController.arrayAppend('orderItems', { name: '', price: 25 }) // Invalid third item
 
     // Validate to attach errors (validator will automatically fail empty names)
     await formController.validate()
@@ -153,8 +153,8 @@ describe('FormController - Repeatable Field Validation', () => {
 
   it('should clear all validation errors when entire array is cleared', async () => {
     // Add more items with validation errors
-    await formController.arrayAdd('orderItems', { name: '', price: 15 })
-    await formController.arrayAdd('orderItems', { name: '', price: 25 })
+    await formController.arrayAppend('orderItems', { name: '', price: 15 })
+    await formController.arrayAppend('orderItems', { name: '', price: 25 })
 
     // Validate to attach errors (validator will automatically fail empty names)
     await formController.validate()
@@ -191,8 +191,8 @@ describe('FormController - Repeatable Field Validation', () => {
   it('should maintain validation state for remaining items after partial removal', async () => {
     // Start with 3 items: valid, invalid, valid
     await formController.setValue('orderItems.0.name', 'Valid Item 1')
-    await formController.arrayAdd('orderItems', { name: '', price: 15 }) // Invalid
-    await formController.arrayAdd('orderItems', {
+    await formController.arrayAppend('orderItems', { name: '', price: 15 }) // Invalid
+    await formController.arrayAppend('orderItems', {
       name: 'Valid Item 3',
       price: 25,
     })
@@ -228,13 +228,13 @@ describe('FormController - Repeatable Field Validation', () => {
   it('should preserve validation errors correctly when array items are moved', async () => {
     // Start with 5 items: valid, invalid, valid, invalid, valid
     await formController.setValue('orderItems.0.name', 'Valid Item 1')
-    await formController.arrayAdd('orderItems', { name: '', price: 15 }) // Invalid at index 1
-    await formController.arrayAdd('orderItems', {
+    await formController.arrayAppend('orderItems', { name: '', price: 15 }) // Invalid at index 1
+    await formController.arrayAppend('orderItems', {
       name: 'Valid Item 3',
       price: 25,
     })
-    await formController.arrayAdd('orderItems', { name: '', price: 35 }) // Invalid at index 3
-    await formController.arrayAdd('orderItems', {
+    await formController.arrayAppend('orderItems', { name: '', price: 35 }) // Invalid at index 3
+    await formController.arrayAppend('orderItems', {
       name: 'Valid Item 5',
       price: 45,
     }) // Valid at index 4

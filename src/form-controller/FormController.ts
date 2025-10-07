@@ -56,7 +56,8 @@ function triggerValueChanged(
 
 function createFieldState(
   formController: FormController,
-  path: string
+  path: string,
+  errorsChangedSignal: Signal<number>
 ): IFieldState {
   // Individual field state signals
   const isDirty = signal(false)
@@ -75,7 +76,7 @@ function createFieldState(
 
   // Computed field errors from form controller
   const errors = computed(() => {
-    formController.errorsChanged() // Subscribe to errors changes
+    errorsChangedSignal() // Subscribe to errors changes
     return formController.getErrors()[path] || []
   }) as ISignal<string[]>
 
@@ -97,20 +98,20 @@ function createFieldState(
 }
 
 export class FormController implements IFormController {
-  // Form-level reactive state
+  // Form-level reactive state (public readonly)
   readonly isSubmitting: Signal<boolean>
   readonly isValidating: Signal<boolean>
   readonly isDirty: ISignal<boolean>
   readonly isTouched: ISignal<boolean>
   readonly isValid: ISignal<boolean>
 
-  // Internal state
+  // Internal state (all private)
   private dataSource: DataSource
   private initialDataSource: DataSource
   private validator: FormValidator
   private fieldStates: Map<string, IFieldState> = new Map()
-  readonly dataChanged: Signal<number>
-  readonly errorsChanged: Signal<number>
+  private readonly dataChanged: Signal<number>
+  private readonly errorsChanged: Signal<number>
   private readonly fieldStatesSize: Signal<number>
   private errors: Record<string, string[]> = {}
 
@@ -153,7 +154,7 @@ export class FormController implements IFormController {
   field(path: string): IFieldState {
     // Cache field states to maintain signal consistency
     if (!this.fieldStates.has(path)) {
-      const fieldState = createFieldState(this, path)
+      const fieldState = createFieldState(this, path, this.errorsChanged)
       this.fieldStates.set(path, fieldState)
       this.fieldStatesSize(this.fieldStates.size)
     }
@@ -312,28 +313,16 @@ export class FormController implements IFormController {
     this.fieldStates.clear()
 
     // Clear any ongoing operations
-    this.isSubmitting(false)
     this.isValidating(false)
   }
 
   // Array operations
-  async arrayAdd(
+  async arrayAppend(
     arrayPath: string,
     item: unknown,
-    index?: number
+    validate: boolean = true
   ): Promise<void> {
-    if (index !== undefined) {
-      this.dataSource.arrayInsert(arrayPath, index, item)
-      await insertFieldState(
-        this.fieldStates,
-        (path) => this.field(path),
-        (path) => this.validateField(path),
-        arrayPath,
-        index
-      )
-    } else {
-      this.dataSource.arrayPush(arrayPath, item)
-    }
+    this.dataSource.arrayAppend(arrayPath, item)
 
     // Mark array field as dirty
     const arrayField = this.field(arrayPath)
@@ -342,10 +331,62 @@ export class FormController implements IFormController {
     // Trigger value change for the array and all related paths
     this.triggerValueChanged(arrayPath)
 
-    this.validateField(arrayPath)
+    if (validate) {
+      await this.validateField(arrayPath)
+    }
   }
 
-  async arrayRemove(arrayPath: string, index: number): Promise<void> {
+  async arrayPrepend(
+    arrayPath: string,
+    item: unknown,
+    validate: boolean = true
+  ): Promise<void> {
+    this.dataSource.arrayPrepend(arrayPath, item)
+
+    // Mark array field as dirty
+    const arrayField = this.field(arrayPath)
+    arrayField.isDirty(true)
+
+    // Trigger value change for the array and all related paths
+    this.triggerValueChanged(arrayPath)
+
+    if (validate) {
+      await this.validateField(arrayPath)
+    }
+  }
+
+  async arrayInsert(
+    arrayPath: string,
+    index: number,
+    item: unknown,
+    validate: boolean = true
+  ): Promise<void> {
+    this.dataSource.arrayInsert(arrayPath, index, item)
+    await insertFieldState(
+      this.fieldStates,
+      (path) => this.field(path),
+      (path) => this.validateField(path),
+      arrayPath,
+      index
+    )
+
+    // Mark array field as dirty
+    const arrayField = this.field(arrayPath)
+    arrayField.isDirty(true)
+
+    // Trigger value change for the array and all related paths
+    this.triggerValueChanged(arrayPath)
+
+    if (validate) {
+      await this.validateField(arrayPath)
+    }
+  }
+
+  async arrayRemove(
+    arrayPath: string,
+    index: number,
+    validate: boolean = true
+  ): Promise<void> {
     this.dataSource.arrayRemove(arrayPath, index)
     const currentArrayLength =
       (this.dataSource.get(arrayPath) as unknown[])?.length || 0
@@ -368,13 +409,16 @@ export class FormController implements IFormController {
     // Trigger value change for the array and all related paths
     this.triggerValueChanged(arrayPath)
 
-    this.validateField(arrayPath)
+    if (validate) {
+      await this.validateField(arrayPath)
+    }
   }
 
   async arrayMove(
     arrayPath: string,
     fromIndex: number,
-    toIndex: number
+    toIndex: number,
+    validate: boolean = true
   ): Promise<void> {
     // Clean up all errors for this array to force fresh validation
     this.cleanupArrayMoveErrors(arrayPath)
@@ -399,7 +443,9 @@ export class FormController implements IFormController {
     // Trigger value change for the array and all related paths
     this.triggerValueChanged(arrayPath)
 
-    this.validateField(arrayPath)
+    if (validate) {
+      await this.validateField(arrayPath)
+    }
   }
 
   setErrors(errors: Record<string, string[]>): void {
@@ -490,9 +536,9 @@ export class FormController implements IFormController {
   }
 
   /**
-   * Set errors for a specific field
+   * Set errors for a specific field (internal helper)
    */
-  setFieldErrors(path: string, errors: string[]): void {
+  private setFieldErrors(path: string, errors: string[]): void {
     const currentErrors = { ...this.errors }
 
     if (errors.length > 0) {
@@ -506,14 +552,14 @@ export class FormController implements IFormController {
   }
 
   /**
-   * Trigger value change notifications for a field and all related paths
+   * Trigger value change notifications for a field and all related paths (internal helper)
    * This includes:
    * - The field itself
    * - All parent paths (for nested object reactivity)
    * - All child paths (for array/object changes affecting nested fields)
    * - Global data change signal (for backward compatibility)
    */
-  triggerValueChanged(path: string): void {
+  private triggerValueChanged(path: string): void {
     triggerValueChanged(path, this.fieldStates, this.dataChanged)
   }
 }

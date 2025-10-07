@@ -143,9 +143,9 @@ document.addEventListener('alpine:init', () => {
       },
 
       // Array manipulation methods
-      arrayAdd(arrayPath) {
+      arrayAppend(arrayPath) {
         const newItem = arrayDefaults[arrayPath] || {}
-        formController.arrayAdd(arrayPath, newItem).catch(console.error)
+        formController.arrayAppend(arrayPath, newItem).catch(console.error)
       },
 
       arrayRemove(arrayPath, index) {
@@ -474,7 +474,7 @@ document.addEventListener('alpine:init', () => {
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-semibold text-gray-900">Emergency Contacts</h2>
                         <button type="button"
-                                @click="arrayAdd('contacts')"
+                                @click="arrayAppend('contacts')"
                                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
                             Add Contact
                         </button>

@@ -38,6 +38,7 @@ npm install @encolajs/form-controller
 
 ```typescript
 import { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import { effect } from 'alien-signals'
 
 // Create form controller
 const dataSource = new PlainObjectDataSource({ name: '', email: '' })
@@ -48,17 +49,23 @@ const nameField = form.field('name')
 
 // Subscribe to changes
 effect(() => {
-  console.log('Name:', nameField.value.get())
-  console.log('Is valid:', nameField.isValid.get())
+  console.log('Name:', nameField.value())
+  console.log('Is valid:', nameField.isValid())
 })
 
 // Update values
-nameField.setValue('John Doe')
+await form.setValue('name', 'John Doe')
+
+// Validate form
+const isValid = await form.validate()
+
+// Array operations
+await form.arrayInsert('items', toIndex, { name: 'First Item' })
+await form.arrayAppend('items', { name: 'Item 2' }) // same as insert to the last position
+await form.arrayPrepend('items', { name: 'Item 0' }) // same as insert to the last position
+await form.arrayRemove('items', fromIndex)
+await form.arrayMove('items', fromIndex, toIndex)
 ```
-
-## Documentation
-
-Full documentation will be available after implementation.
 
 ## Development
 

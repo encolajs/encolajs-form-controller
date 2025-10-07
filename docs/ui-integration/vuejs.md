@@ -269,9 +269,9 @@ onUnmounted(() => {
 })
 
 // Array manipulation methods
-const arrayAdd = () => {
+const arrayAppend = () => {
   const newItem = { ...props.defaultItem }
-  formController.arrayAdd(props.name, newItem).catch(console.error)
+  formController.arrayAppend(props.name, newItem).catch(console.error)
 }
 
 const arrayRemove = (index) => {
@@ -294,7 +294,7 @@ const arrayMoveDown = (index) => {
 <template>
   <slot
     :items="items"
-    :arrayAdd="arrayAdd"
+    :arrayAppend="arrayAppend"
     :arrayRemove="arrayRemove"
     :arrayMoveUp="arrayMoveUp"
     :arrayMoveDown="arrayMoveDown"
@@ -591,14 +591,14 @@ const getInputValue = (event) => {
             <HeadlessRepeatable
               name="contacts"
               :default-item="contactDefault"
-              v-slot="{ items, arrayAdd, arrayRemove, arrayMoveUp, arrayMoveDown }"
+              v-slot="{ items, arrayAppend, arrayRemove, arrayMoveUp, arrayMoveDown }"
             >
               <div>
                 <div class="flex justify-between items-center mb-4">
                   <h2 class="text-xl font-semibold text-gray-900">Emergency Contacts</h2>
                   <button
                     type="button"
-                    @click="arrayAdd"
+                    @click="arrayAppend"
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm"
                   >
                     Add Contact

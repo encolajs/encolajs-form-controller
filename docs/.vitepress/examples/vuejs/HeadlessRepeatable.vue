@@ -19,9 +19,9 @@ const field = formController.field(props.name)
 const items = ref([])
 const itemsErrors = ref([])
 
-const arrayAdd = () => {
+const arrayAppend = () => {
   const newItem = { ...props.defaultItem }
-  formController.arrayAdd(props.name, newItem).catch(console.error)
+  formController.arrayAppend(props.name, newItem).catch(console.error)
 }
 
 const arrayRemove = (index) => {
@@ -59,7 +59,7 @@ effect(() => {
     <slot
       :items="items"
       :itemsErrors="itemsErrors"
-      :arrayAdd="arrayAdd"
+      :arrayAppend="arrayAppend"
       :arrayRemove="arrayRemove"
       :arrayMoveUp="arrayMoveUp"
       :arrayMoveDown="arrayMoveDown"

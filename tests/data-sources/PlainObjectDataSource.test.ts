@@ -158,20 +158,20 @@ describe('PlainObjectDataSource', () => {
   })
 
   describe('array operations', () => {
-    describe('arrayPush', () => {
+    describe('arrayAppend', () => {
       it('should add items to existing arrays', () => {
-        dataSource.arrayPush('items', { price: 300, quantity: 3 })
+        dataSource.arrayAppend('items', { price: 300, quantity: 3 })
         expect(dataSource.get('items').length).toBe(3)
         expect(dataSource.get('items.2.price')).toBe(300)
       })
 
       it('should create new array if path does not exist', () => {
-        dataSource.arrayPush('tags', 'javascript')
+        dataSource.arrayAppend('tags', 'javascript')
         expect(dataSource.get('tags')).toEqual(['javascript'])
       })
 
       it('should handle deeply nested array paths', () => {
-        dataSource.arrayPush('address.tags', 'residential')
+        dataSource.arrayAppend('address.tags', 'residential')
         expect(dataSource.get('address.tags')).toEqual(['residential'])
       })
     })
@@ -326,7 +326,7 @@ describe('PlainObjectDataSource', () => {
       const clonedDataSource = dataSource.clone()
 
       // Modify array in original
-      dataSource.arrayPush('items', { price: 300, quantity: 3 })
+      dataSource.arrayAppend('items', { price: 300, quantity: 3 })
 
       // Clone should have original array
       expect(clonedDataSource.get('items')).toHaveLength(2)

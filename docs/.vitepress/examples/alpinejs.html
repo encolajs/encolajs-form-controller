@@ -28,6 +28,7 @@
                       'confirmPassword': 'required|same_as:@password',
                       'profile.bio': 'max_length:500',
                       'profile.website': 'url',
+                      'contacts': 'array_min:2',
                       'contacts.*.name': 'required',
                       'contacts.*.email': 'required|email'
                     },
@@ -200,11 +201,15 @@
                 <h2 class="mb-2 flex items-center justify-between">
                     <div class="text-xl font-semibold text-gray-900" style="margin-top: 0">Emergency Contacts</div>
                     <button type="button"
-                            x-on:click="arrayAdd('contacts')"
+                            x-on:click="arrayAppend('contacts')"
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
                         Add Contact
                     </button>
                 </h2>
+
+                <div x-show="hasFieldErrors(`contacts`)" class="text-red-500 text-sm mt-1">
+                    <div x-text="getFieldErrors('contacts')"></div>
+                </div>
 
                 <template x-if="formValues" class="space-y-4">
                     <template x-for="(contact, index) in formValues.contacts" x-bind:key="`contact-${index}`" >

@@ -235,10 +235,10 @@ describe('FormController', () => {
   })
 
   describe('array operations', () => {
-    it('should add items to arrays', () => {
+    it('should push items to arrays', async () => {
       const newItem = { price: 300, quantity: 3 }
 
-      formController.arrayAdd('items', newItem)
+      await formController.arrayAppend('items', newItem)
 
       const items = dataSource.get('items') as any[]
       expect(items).toHaveLength(3)
@@ -246,10 +246,10 @@ describe('FormController', () => {
       expect(formController.isDirty()).toBe(true)
     })
 
-    it('should add items at specific index', () => {
+    it('should insert items at specific index', async () => {
       const newItem = { price: 150, quantity: 1.5 }
 
-      formController.arrayAdd('items', newItem, 1)
+      await formController.arrayInsert('items', 1, newItem)
 
       const items = dataSource.get('items') as any[]
       expect(items).toHaveLength(3)
@@ -309,7 +309,7 @@ describe('FormController', () => {
         expect(originalField1Price.isDirty()).toBe(true)
 
         // Insert at beginning
-        formController.arrayAdd('items', newItem, 0)
+        formController.arrayInsert('items', 0, newItem)
 
         // After insertion, the original items.0 data should now be at items.1
         // but the field state for items.0 should be clean (new item)
@@ -338,7 +338,7 @@ describe('FormController', () => {
         const newItem = { price: 175, quantity: 2 }
 
         // Insert at index 1
-        formController.arrayAdd('items', newItem, 1)
+        formController.arrayInsert('items', 1, newItem)
 
         // Original items.0 should remain unchanged
         const field0Price = formController.field('items.0.price')
@@ -363,7 +363,7 @@ describe('FormController', () => {
         const newItem = { price: 400, quantity: 4 }
 
         // Append at end
-        formController.arrayAdd('items', newItem)
+        formController.arrayAppend('items', newItem)
 
         // Original field states should remain unchanged
         const field0Price = formController.field('items.0.price')
@@ -405,7 +405,7 @@ describe('FormController', () => {
           validate: false,
         })
         const newItem = { price: 999, quantity: 9 }
-        formController.arrayAdd('items', newItem)
+        formController.arrayAppend('items', newItem)
 
         // Remove middle item (index 1)
         formController.arrayRemove('items', 1)
@@ -471,8 +471,8 @@ describe('FormController', () => {
         // Add more items and states
         const newItem1 = { price: 300, quantity: 3 }
         const newItem2 = { price: 400, quantity: 4 }
-        formController.arrayAdd('items', newItem1)
-        formController.arrayAdd('items', newItem2)
+        formController.arrayAppend('items', newItem1)
+        formController.arrayAppend('items', newItem2)
 
         // Create field states first, then set values
         formController.field('items.2.price')
@@ -646,10 +646,10 @@ describe('FormController', () => {
       expect(nameField.value()).toBe('Bob')
     })
 
-    it('should handle validation errors during submit', async () => {
+    it('should handle validation errors during validation', async () => {
       validator.mockFormValidation({ name: ['Error'] })
 
-      const result = await formController.submit()
+      const result = await formController.validate()
 
       expect(result).toBe(false)
       expect(formController.field('name').errors()).toEqual(['Error'])
@@ -782,7 +782,10 @@ describe('FormController', () => {
       validator.mockFieldValidation('items.3.name', ['New Error 3'])
 
       // Insert item at index 1
-      await formController.arrayAdd('items', { name: 'New Item', value: 15 }, 1)
+      await formController.arrayInsert('items', 1, {
+        name: 'New Item',
+        value: 15,
+      })
 
       // Check that previously validated fields were revalidated at new positions
       const newField1 = formController.field('items.1.name')
@@ -894,7 +897,10 @@ describe('FormController', () => {
       expect(field2.isTouched()).toBe(true)
 
       // Insert item at index 1
-      await formController.arrayAdd('items', { name: 'New Item', value: 15 }, 1)
+      await formController.arrayInsert('items', 1, {
+        name: 'New Item',
+        value: 15,
+      })
 
       // Check that field states were preserved and shifted correctly
       const newField1 = formController.field('items.1.name')
@@ -927,7 +933,10 @@ describe('FormController', () => {
       validator.mockFieldValidation('items.2.name', ['Should not be called'])
 
       // Insert item at index 1
-      await formController.arrayAdd('items', { name: 'New Item', value: 15 }, 1)
+      await formController.arrayInsert('items', 1, {
+        name: 'New Item',
+        value: 15,
+      })
 
       // Check that validation was not triggered for unvalidated fields
       const newField1 = formController.field('items.1.name')
@@ -1029,7 +1038,7 @@ describe('FormController', () => {
       expect(itemsChanges).toEqual([0])
 
       // Add item to array
-      await formController.arrayAdd('items', { price: 300, quantity: 1 })
+      await formController.arrayAppend('items', { price: 300, quantity: 1 })
 
       // Array field should change
       expect(itemsChanges).toEqual([0, 1])

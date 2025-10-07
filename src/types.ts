@@ -32,8 +32,11 @@ export interface DataSource {
   /** Get all data */
   all(): Record<string, unknown>
 
-  /** Add item to array at path */
-  arrayPush(arrayPath: string, value: unknown): void
+  /** Add item to the end of an array at path */
+  arrayAppend(arrayPath: string, value: unknown): void
+
+  /** Add item to the beginning of an array at path */
+  arrayPrepend(arrayPath: string, value: unknown): void
 
   /** Insert item into array at specific index */
   arrayInsert(arrayPath: string, index: number, value: unknown): void
@@ -144,10 +147,10 @@ export interface IFormController {
   readonly isValidating: Signal<boolean>
 
   /** Whether any field has been modified */
-  readonly isDirty: Signal<boolean>
+  readonly isDirty: ISignal<boolean>
 
   /** Whether any field has been interacted with */
-  readonly isTouched: Signal<boolean>
+  readonly isTouched: ISignal<boolean>
 
   /** Whether entire form is valid */
   readonly isValid: ISignal<boolean>
@@ -177,70 +180,49 @@ export interface IFormController {
   /** Validate entire form */
   validate(): Promise<boolean>
 
-  /** Submit form */
-  submit(): Promise<boolean>
-
   /** Reset form to initial state */
   reset(): void
 
   /** Cleanup form resources */
   destroy(): void
 
-  /** Add item to array field */
-  arrayAdd(arrayPath: string, item: unknown, index?: number): Promise<void>
+  /** Push item to end of array field */
+  arrayAppend(
+    arrayPath: string,
+    item: unknown,
+    validate: boolean
+  ): Promise<void>
+
+  /** Push item to end of array field */
+  arrayPrepend(
+    arrayPath: string,
+    item: unknown,
+    validate: boolean
+  ): Promise<void>
+
+  /** Insert item into array field at specific index */
+  arrayInsert(
+    arrayPath: string,
+    index: number,
+    item: unknown,
+    validate: boolean
+  ): Promise<void>
 
   /** Remove item from array field */
-  arrayRemove(arrayPath: string, index: number): Promise<void>
+  arrayRemove(
+    arrayPath: string,
+    index: number,
+    validate: boolean
+  ): Promise<void>
 
   /** Move item within array field */
   arrayMove(
     arrayPath: string,
     fromIndex: number,
-    toIndex: number
+    toIndex: number,
+    validate: boolean
   ): Promise<void>
 
   /** Set form-level errors */
   setErrors(errors: Record<string, string[]>): void
-
-  /**
-   * Trigger value change notifications for a field and all related paths
-   * This includes the field itself, all parent paths, all child paths, and the global data change signal
-   */
-  triggerValueChanged(path: string): void
 }
-
-/**
- * Form controller configuration options
- */
-export interface FormControllerOptions {
-  /** Initial form data */
-  initialData?: Record<string, unknown>
-
-  /** Custom data source */
-  dataSource?: DataSource
-
-  /** Custom validator */
-  validator?: FormValidator
-
-  /** Whether to validate on change */
-  validateOnChange?: boolean
-
-  /** Whether to validate on blur */
-  validateOnBlur?: boolean
-
-  /** Custom submit handler */
-  onSubmit?: (data: Record<string, unknown>) => Promise<boolean> | boolean
-}
-
-/**
- * Path utility type for type-safe path access
- */
-export type Path<T> = T extends object
-  ? {
-      [K in keyof T]: K extends string
-        ? T[K] extends object
-          ? `${K}` | `${K}.${Path<T[K]>}`
-          : `${K}`
-        : never
-    }[keyof T]
-  : never

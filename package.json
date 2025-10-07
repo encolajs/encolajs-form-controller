@@ -1,6 +1,6 @@
 {
   "name": "@encolajs/form-controller",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-agnostic form state management using alien-signals",
   "type": "module",
   "main": "./dist/index.umd.js",

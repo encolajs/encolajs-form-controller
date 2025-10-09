@@ -18,13 +18,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ClientOnly>
-    <div v-if="error" class="error">
-      Failed to load Svelte example: {{ error }}
-    </div>
-    <SvelteWrapper v-else-if="SvelteExample" :component="SvelteExample" />
-    <div v-else>Loading Svelte example...</div>
-  </ClientOnly>
+  <SvelteWrapper v-if="SvelteExample" :component="SvelteExample" />
 </template>
 
 <style scoped>

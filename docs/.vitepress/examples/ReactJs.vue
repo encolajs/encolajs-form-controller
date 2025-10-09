@@ -12,8 +12,5 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ClientOnly>
-    <ReactWrapper v-if="ReactExample" :component="ReactExample" />
-    <div v-else>Loading React example...</div>
-  </ClientOnly>
+  <ReactWrapper v-if="ReactExample" :component="ReactExample" />
 </template>

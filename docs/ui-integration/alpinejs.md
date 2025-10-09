@@ -15,7 +15,7 @@ This example demonstrates a complete form implementation using EncolaJS Form Con
 
 ```js [Javascript]
 // Import dependencies (replace with actual CDN URLs or local files)
-import { FormController, useForm, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
+import useForm, { FormController, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
 import { createEncolaValidatorFromRules } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 

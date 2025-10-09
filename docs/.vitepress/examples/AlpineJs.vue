@@ -1,5 +1,5 @@
 <script setup>
-import { FormController, useForm, PlainObjectDataSource, effect } from '../../../src/'
+import useForm, { FormController, PlainObjectDataSource, effect } from '../../../src/'
 import { createEncolaValidatorFromRules } from '../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import {onMounted} from 'vue'

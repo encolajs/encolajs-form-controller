@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import markdownItContainer from 'markdown-it-container'
 import path from 'path'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import solid from 'vite-plugin-solid'
 
 export default defineConfig({
   title: 'EncolaJS Form Controller',
@@ -55,9 +56,9 @@ export default defineConfig({
             { text: 'VueJS', link: '/ui-integration/vuejs' },
             { text: 'React', link: '/ui-integration/react' },
             { text: 'Svelte', link: '/ui-integration/svelte' },
+            { text: 'SolidJS', link: '/ui-integration/solidjs' },
             { text: 'AlpineJS', link: '/ui-integration/alpinejs' },
             { text: 'Vanilla JS', link: '/ui-integration/vanilla-javascript' },
-            { text: 'SolidJS (TBD)', link: '/ui-integration/solidjs' },
           ],
         },
       ],
@@ -125,6 +126,9 @@ export default defineConfig({
     plugins: [
       svelte({
         emitCss: false
+      }),
+      solid({
+        include: ['**/.vitepress/examples/solidjs/**/*.tsx', '**/.vitepress/examples/solidjs/**/*.jsx']
       })
     ],
     ssr: {
@@ -135,7 +139,7 @@ export default defineConfig({
         '@': path.resolve(__dirname, '../../src'),
       },
       extensions: ['.js', '.ts', '.jsx', '.tsx', '.json', '.vue', '.svelte'],
-      dedupe: ['react', 'react-dom', 'svelte']
+      dedupe: ['react', 'react-dom', 'svelte', 'solid-js']
     },
     optimizeDeps: {
       include: ['react', 'react-dom']

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import * as v from 'valibot'
 import {
   ValibotValidatorAdapter,
-  createValibotAdapter,
+  useValibotValidator,
 } from '../../src/adapters/ValibotValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
@@ -52,7 +52,7 @@ describe('ValibotValidatorAdapter', () => {
     })
 
     it('should be created using factory function', () => {
-      const factoryAdapter = createValibotAdapter(userSchema)
+      const factoryAdapter = useValibotValidator(userSchema)
       expect(factoryAdapter).toBeInstanceOf(ValibotValidatorAdapter)
     })
   })

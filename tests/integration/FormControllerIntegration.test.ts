@@ -3,6 +3,7 @@ import { FormController } from '../../src/form-controller/FormController'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 import { MockFormValidator } from '../mocks/MockFormValidator'
 import { effect } from 'alien-signals'
+import useForm from '../../src'
 
 describe('FormController Integration', () => {
   let formController: FormController
@@ -50,7 +51,7 @@ describe('FormController Integration', () => {
     initialData = createInitialData()
     dataSource = new PlainObjectDataSource(createInitialData()) // Use a separate copy for the data source
     validator = new MockFormValidator()
-    formController = new FormController(dataSource, validator)
+    formController = useForm(dataSource, validator)
   })
 
   describe('real-world form scenarios', () => {
@@ -466,7 +467,7 @@ describe('FormController Integration', () => {
       }
 
       const largeDataSource = new PlainObjectDataSource(largeData)
-      const largeController = new FormController(largeDataSource, validator)
+      const largeController = useForm(largeDataSource, validator)
 
       const startTime = Date.now()
 

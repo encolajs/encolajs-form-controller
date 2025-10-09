@@ -214,7 +214,7 @@ export class ValibotValidatorAdapter implements FormValidator {
 /**
  * Factory function for creating Valibot adapter
  */
-export function createValibotAdapter(
+export function useValibotValidator(
   schema?: ValibotSchema
 ): ValibotValidatorAdapter {
   return new ValibotValidatorAdapter(schema)

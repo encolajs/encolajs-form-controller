@@ -14,4 +14,4 @@
  * const formController = new FormController(dataSource, validator)
  */
 
-export { ValibotValidatorAdapter, createValibotAdapter } from './src/adapters/ValibotValidatorAdapter'
+export { ValibotValidatorAdapter, useValibotValidator } from './src/adapters/ValibotValidatorAdapter'

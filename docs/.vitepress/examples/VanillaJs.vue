@@ -1,6 +1,6 @@
 <script setup>
-import { FormController, PlainObjectDataSource, effect } from '../../../src/'
-import { createEncolaAdapterFromRules } from '../../../encola'
+import useForm, { FormController, PlainObjectDataSource, effect } from '../../../src/'
+import { createEncolaValidatorFromRules } from '../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import {onMounted} from "vue";
 
@@ -29,7 +29,7 @@ const customMessages = {
   'contacts.*.email:required': 'Contact email is required',
 }
 
-const validator = createEncolaAdapterFromRules(validatorFactory, userRules, customMessages)
+const validator = createEncolaValidatorFromRules(validatorFactory, userRules, customMessages)
 
 
 // We assume the form is pre-populated by the server
@@ -54,7 +54,7 @@ const dataSource = new PlainObjectDataSource({
   contacts: []
 })
 
-const form = new FormController(dataSource, validator)
+const form = useForm(dataSource, validator)
 
 // Make form globally available for debugging
 window.form = form

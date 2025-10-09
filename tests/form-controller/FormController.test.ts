@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { FormController } from '../../src/form-controller/FormController'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 import { MockFormValidator } from '../mocks/MockFormValidator'
 import { effect } from 'alien-signals'
+import useForm from '../../src'
 
 describe('FormController', () => {
   let formController: FormController
@@ -30,7 +31,7 @@ describe('FormController', () => {
     initialData = createInitialData()
     dataSource = new PlainObjectDataSource(createInitialData()) // Use a separate copy for the data source
     validator = new MockFormValidator()
-    formController = new FormController(dataSource, validator)
+    formController = useForm(dataSource, validator)
   })
 
   describe('initialization', () => {
@@ -40,7 +41,7 @@ describe('FormController', () => {
     })
 
     it('should initialize with default validator when none provided', () => {
-      const controller = new FormController(dataSource)
+      const controller = useForm(dataSource)
       expect(controller).toBeDefined()
     })
 

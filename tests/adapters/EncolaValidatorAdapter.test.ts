@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { ValidatorFactory } from '@encolajs/validator'
 import {
   EncolaValidatorAdapter,
-  createEncolaAdapter,
-  createEncolaAdapterFromRules,
+  useEncolaValidator,
+  createEncolaValidatorFromRules,
 } from '../../src/adapters/EncolaValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
@@ -50,12 +50,12 @@ describe('EncolaValidatorAdapter', () => {
 
     it('should be created using factory function', () => {
       const validator = validatorFactory.make(userRules)
-      const factoryAdapter = createEncolaAdapter(validator)
+      const factoryAdapter = useEncolaValidator(validator)
       expect(factoryAdapter).toBeInstanceOf(EncolaValidatorAdapter)
     })
 
     it('should be created from rules using factory helper', () => {
-      const rulesAdapter = createEncolaAdapterFromRules(
+      const rulesAdapter = createEncolaValidatorFromRules(
         validatorFactory,
         userRules
       )

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import * as yup from 'yup'
 import {
   YupValidatorAdapter,
-  createYupAdapter,
+  useYupValidator,
 } from '../../src/adapters/YupValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
@@ -53,7 +53,7 @@ describe('YupValidatorAdapter', () => {
     })
 
     it('should be created using factory function', () => {
-      const factoryAdapter = createYupAdapter(userSchema)
+      const factoryAdapter = useYupValidator(userSchema)
       expect(factoryAdapter).toBeInstanceOf(YupValidatorAdapter)
     })
   })

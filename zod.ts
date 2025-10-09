@@ -23,4 +23,4 @@
  * const formController = new FormController(dataSource, validator)
  */
 
-export { ZodValidatorAdapter, createZodAdapter } from './src/adapters/ZodValidatorAdapter'
+export { ZodValidatorAdapter, useZodValidator } from './src/adapters/ZodValidatorAdapter'

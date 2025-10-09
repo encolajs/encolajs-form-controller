@@ -15,8 +15,8 @@ This example demonstrates a complete form implementation using EncolaJS Form Con
 
 ```js [Javascript]
 // Import dependencies (replace with actual CDN URLs or local files)
-import { FormController, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
-import { createEncolaAdapterFromRules } from '@encolajs/form-controller/encola'
+import { FormController, useForm, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
+import { createEncolaValidatorFromRules } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 
 // Create global validator factory
@@ -35,9 +35,9 @@ document.addEventListener('alpine:init', () => {
     } = config
 
     // Create validator and form controller immediately
-    const validator = createEncolaAdapterFromRules(validatorFactory, rules, messages)
+    const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
     const dataSource = new PlainObjectDataSource(values)
-    const formController = new FormController(dataSource, validator)
+    const formController = useForm(dataSource, validator)
 
     // Make form controller globally available for debugging
     if (typeof window !== 'undefined') {

@@ -1,6 +1,6 @@
 <script setup>
 import { PlainObjectDataSource } from '../../../src/'
-import { createEncolaAdapterFromRules } from '../../../encola'
+import { createEncolaValidatorFromRules } from '../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import HeadlessForm from './vuejs/HeadlessForm.vue'
 import HeadlessInput from './vuejs/HeadlessInput.vue'
@@ -50,7 +50,7 @@ const messages = {
 
 // Create data source and validator
 const dataSource = new PlainObjectDataSource(initialValues)
-const validator = createEncolaAdapterFromRules(validatorFactory, rules, messages)
+const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
 
 // Default item for contacts array
 const contactDefault = { name: '', email: '' }

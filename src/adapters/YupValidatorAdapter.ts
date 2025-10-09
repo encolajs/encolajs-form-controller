@@ -215,6 +215,6 @@ export class YupValidatorAdapter implements FormValidator {
 /**
  * Factory function for creating Yup adapter
  */
-export function createYupAdapter(schema?: YupSchema): YupValidatorAdapter {
+export function useYupValidator(schema?: YupSchema): YupValidatorAdapter {
   return new YupValidatorAdapter(schema)
 }

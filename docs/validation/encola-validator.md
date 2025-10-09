@@ -11,7 +11,7 @@ npm install @encolajs/form-controller @encolajs/validator
 ## Basic Setup
 
 ```javascript
-import { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import { useForm, FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 import { EncolaValidatorAdapter } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 
@@ -60,7 +60,7 @@ const dataSource = new PlainObjectDataSource({
   contacts: []
 })
 
-const form = new FormController(dataSource, validator)
+const form = useForm(dataSource, validator)
 ```
 
 ## Advanced Features
@@ -154,7 +154,7 @@ console.log(contactNameField.errors()) // Array of error messages
 ### Creating Adapters
 
 ```javascript
-import { createEncolaAdapter, createEncolaAdapterFromRules } from '@encolajs/form-controller/encola'
+import { createEncolaAdapter, createEncolaValidatorFromRules } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 
 // Method 1: From existing validator instance
@@ -162,5 +162,5 @@ const existingValidator = validatorFactory.make(rules, messages)
 const adapter1 = createEncolaAdapter(existingValidator)
 
 // Method 2: From rules directly
-const adapter2 = createEncolaAdapterFromRules(validatorFactory, rules, messages)
+const adapter2 = createEncolaValidatorFromRules(validatorFactory, rules, messages)
 ```

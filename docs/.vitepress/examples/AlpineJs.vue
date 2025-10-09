@@ -1,6 +1,6 @@
 <script setup>
-import { FormController, PlainObjectDataSource, effect } from '../../../src/'
-import { createEncolaAdapterFromRules } from '../../../encola'
+import { FormController, useForm, PlainObjectDataSource, effect } from '../../../src/'
+import { createEncolaValidatorFromRules } from '../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import {onMounted} from 'vue'
 import contents from './alpinejs.html?raw'
@@ -27,9 +27,9 @@ onMounted(async () => {
     } = config
 
     // Create validator and form controller immediately
-    const validator = createEncolaAdapterFromRules(validatorFactory, rules, messages)
+    const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
     const dataSource = new PlainObjectDataSource(values)
-    const formController = new FormController(dataSource, validator)
+    const formController = useForm(dataSource, validator)
 
     // Make form controller globally available for debugging
     if (typeof window !== 'undefined') {

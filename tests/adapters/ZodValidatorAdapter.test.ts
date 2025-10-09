@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { z } from 'zod'
 import {
   ZodValidatorAdapter,
-  createZodAdapter,
+  useZodValidator,
 } from '../../src/adapters/ZodValidatorAdapter'
 import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
 
@@ -49,7 +49,7 @@ describe('ZodValidatorAdapter', () => {
     })
 
     it('should be created using factory function', () => {
-      const factoryAdapter = createZodAdapter(userSchema)
+      const factoryAdapter = useZodValidator(userSchema)
       expect(factoryAdapter).toBeInstanceOf(ZodValidatorAdapter)
     })
   })

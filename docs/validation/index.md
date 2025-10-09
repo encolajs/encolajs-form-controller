@@ -77,7 +77,7 @@ Laravel-inspired validation with string-based rule syntax.
 **Best for:** Laravel developers, rule-based validation, dynamic rules
 
 ```javascript
-import { EncolaValidatorAdapter, createEncolaAdapterFromRules } from '@encolajs/form-controller/encola'
+import { EncolaValidatorAdapter, createEncolaValidatorFromRules } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 
 const rules = {
@@ -88,7 +88,7 @@ const rules = {
 }
 
 const validatorFactory = new ValidatorFactory()
-const validator = createEncolaAdapterFromRules(validatorFactory, rules)
+const validator = createEncolaValidatorFromRules(validatorFactory, rules)
 ```
 
 ## Custom Validation

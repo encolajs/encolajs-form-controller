@@ -11,7 +11,7 @@ npm install @encolajs/form-controller valibot
 ## Basic Setup
 
 ```javascript
-import { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import useForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 import { ValibotValidatorAdapter } from '@encolajs/form-controller/valibot'
 import * as v from 'valibot'
 
@@ -97,7 +97,7 @@ const dataSource = new PlainObjectDataSource({
   contacts: []
 })
 
-const form = new FormController(dataSource, validator)
+const form = useForm(dataSource, validator)
 ```
 
 ## Advanced Valibot Features

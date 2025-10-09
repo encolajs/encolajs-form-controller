@@ -1,5 +1,5 @@
-import { FormController, PlainObjectDataSource } from '../../../../src/'
-import { createEncolaAdapterFromRules } from '../../../../encola'
+import useForm, { FormController, PlainObjectDataSource } from '../../../../src/'
+import { createEncolaValidatorFromRules } from '../../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import { useFormController } from './useFormController'
 import { useField } from './useField'
@@ -210,8 +210,8 @@ function ContactsArray(props) {
 export default function SolidExample() {
   // Create data source and validator
   const dataSource = new PlainObjectDataSource(initialValues)
-  const validator = createEncolaAdapterFromRules(validatorFactory, rules, messages)
-  const formController = new FormController(dataSource, validator)
+  const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
+  const formController = useForm(dataSource, validator)
 
   // Create form state
   const form = useFormController(formController)

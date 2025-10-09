@@ -17,6 +17,6 @@
 
 export {
   EncolaValidatorAdapter,
-  createEncolaAdapter,
-  createEncolaAdapterFromRules
+  useEncolaValidator,
+  createEncolaValidatorFromRules
 } from './src/adapters/EncolaValidatorAdapter'

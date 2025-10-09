@@ -1,7 +1,7 @@
 <script>
 import { onMount, onDestroy } from 'svelte'
-import { FormController, PlainObjectDataSource } from '../../../../src/'
-import { createEncolaAdapterFromRules } from '../../../../encola'
+import useForm, { FormController, PlainObjectDataSource } from '../../../../src/'
+import { createEncolaValidatorFromRules } from '../../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import { useFormController } from './useFormController.svelte.js'
 import { useField } from './useField.svelte.js'
@@ -51,8 +51,8 @@ const messages = {
 
 // Create data source and validator
 const dataSource = new PlainObjectDataSource(initialValues)
-const validator = createEncolaAdapterFromRules(validatorFactory, rules, messages)
-const formController = new FormController(dataSource, validator)
+const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
+const formController = useForm(dataSource, validator)
 
 // Create form state
 const form = useFormController(formController)

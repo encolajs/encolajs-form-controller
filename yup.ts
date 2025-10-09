@@ -14,4 +14,4 @@
  * const formController = new FormController(dataSource, validator)
  */
 
-export { YupValidatorAdapter, createYupAdapter } from './src/adapters/YupValidatorAdapter'
+export { YupValidatorAdapter, useYupValidator } from './src/adapters/YupValidatorAdapter'

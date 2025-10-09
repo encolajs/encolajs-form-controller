@@ -201,6 +201,6 @@ export class ZodValidatorAdapter implements FormValidator {
 /**
  * Factory function for creating Zod adapter
  */
-export function createZodAdapter(schema?: ZodSchema): ZodValidatorAdapter {
+export function useZodValidator(schema?: ZodSchema): ZodValidatorAdapter {
   return new ZodValidatorAdapter(schema)
 }

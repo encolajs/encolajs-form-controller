@@ -18,8 +18,8 @@ This example demonstrates a complete form implementation using EncolaJS Form Con
 
 ```js [Javascript]
 // Import dependencies (replace with actual CDN URLs or local files)
-import { FormController, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
-import { createEncolaAdapterFromRules } from '@encolajs/form-controller/encola'
+import useForm, { FormController, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
+import { createEncolaValidatorFromRules } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 
 // Create validator factory
@@ -44,7 +44,7 @@ const customMessages = {
   'contacts.*.email:required': 'Contact email is required',
 }
 
-const validator = createEncolaAdapterFromRules(validatorFactory, userRules, customMessages)
+const validator = createEncolaValidatorFromRules(validatorFactory, userRules, customMessages)
 
 // We assume the form is pre-populated by the server
 // so we don't need to populate the datasource
@@ -69,7 +69,7 @@ const dataSource = new PlainObjectDataSource({
 })
 
 // initialize the controller
-const form = new FormController(dataSource, validator)
+const form = useForm(dataSource, validator)
 
 // Make form globally available for debugging
 window.form = form

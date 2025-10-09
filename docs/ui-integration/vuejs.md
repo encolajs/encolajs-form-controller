@@ -23,7 +23,7 @@ The `HeadlessForm` component is the root component that creates the FormControll
 ```vue [HeadlessForm.vue]
 <script setup>
 import { provide, reactive, onMounted, onUnmounted } from 'vue'
-import { FormController } from '@encolajs/form-controller'
+import useForm from '@encolajs/form-controller'
 import { effect } from 'alien-signals'
 
 const props = defineProps({
@@ -39,7 +39,7 @@ const props = defineProps({
 })
 
 // Create form controller
-const formController = new FormController(props.dataSource, props.validator)
+const formController = useForm(props.dataSource, props.validator)
 
 // Reactive form state
 const formState = reactive({
@@ -313,7 +313,7 @@ Here's a complete example showing how to use the headless components to build a 
 ```vue [App.vue]
 <script setup>
 import { PlainObjectDataSource } from '@encolajs/form-controller'
-import { createEncolaAdapterFromRules } from '@encolajs/form-controller/encola'
+import { createEncolaValidatorFromRules } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import HeadlessForm from './HeadlessForm.vue'
 import HeadlessInput from './HeadlessInput.vue'
@@ -362,7 +362,7 @@ const messages = {
 
 // Create data source and validator
 const dataSource = new PlainObjectDataSource(initialValues)
-const validator = createEncolaAdapterFromRules(validatorFactory, rules, messages)
+const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
 
 // Default item for contacts array
 const contactDefault = { name: '', email: '' }

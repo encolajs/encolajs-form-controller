@@ -11,7 +11,7 @@ npm install @encolajs/form-controller zod
 ## Basic Setup
 
 ```javascript
-import { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import useForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 import { ZodValidatorAdapter } from '@encolajs/form-controller/zod'
 import { z } from 'zod'
 
@@ -76,7 +76,7 @@ const dataSource = new PlainObjectDataSource({
   contacts: []
 })
 
-const form = new FormController(dataSource, validator)
+const form = useForm(dataSource, validator)
 ```
 
 ## Advanced Zod Features

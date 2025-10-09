@@ -48,7 +48,7 @@ interface FormValidator {
 Here's a simple example of a custom validator that validates our standard user schema:
 
 ```javascript
-import { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import { FormController, useForm, PlainObjectDataSource } from '@encolajs/form-controller'
 
 class CustomValidator {
   constructor() {
@@ -264,7 +264,7 @@ const dataSource = new PlainObjectDataSource({
   contacts: []
 })
 
-const form = new FormController(dataSource, validator)
+const form = useForm(dataSource, validator)
 ```
 
 ## Advanced Custom Validator

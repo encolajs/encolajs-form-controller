@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
-import { FormController, PlainObjectDataSource } from '../../../../src/'
-import { createEncolaAdapterFromRules } from '../../../../encola'
+import useForm, { FormController, PlainObjectDataSource } from '../../../../src/'
+import { createEncolaValidatorFromRules } from '../../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import { useFormController } from './useFormController.jsx'
 import { useField } from './useField.jsx'
@@ -201,12 +201,12 @@ export default function ReactExample() {
 
     return {
       dataSource: new PlainObjectDataSource(initialValues),
-      validator: createEncolaAdapterFromRules(validatorFactory, rules, messages)
+      validator: createEncolaValidatorFromRules(validatorFactory, rules, messages)
     }
   }, [])
 
   const formController = useMemo(() => {
-    return new FormController(dataSource, validator)
+    return useForm(dataSource, validator)
   }, [dataSource, validator])
 
   const { state, methods, controller } = useFormController(formController)

@@ -1,12 +1,12 @@
 import { signal, computed } from 'alien-signals'
 import type {
   DataSource,
-  FormValidator,
+  IFormValidator,
   IFieldState,
   IFormController,
   FormSetValueOptions,
-  Signal,
   ISignal,
+  IComputed,
 } from '../types'
 import { PlainObjectDataSource } from '@/data-sources'
 import { NoopValidator } from '@/validators'
@@ -22,7 +22,7 @@ import {
 function triggerValueChanged(
   path: string,
   fieldStates: Map<string, IFieldState>,
-  globalDataChangedSignal: Signal<number>
+  globalDataChangedSignal: ISignal<number>
 ): void {
   // 1. Trigger the specific field
   const field = fieldStates.get(path)
@@ -57,7 +57,7 @@ function triggerValueChanged(
 function createFieldState(
   formController: FormController,
   path: string,
-  errorsChangedSignal: Signal<number>
+  errorsChangedSignal: ISignal<number>
 ): IFieldState {
   // Individual field state signals
   const isDirty = signal(false)
@@ -72,16 +72,16 @@ function createFieldState(
   const value = computed(() => {
     valueChanged() // Subscribe to this field's changes
     return formController.getValue(path)
-  }) as ISignal<unknown>
+  }) as IComputed<unknown>
 
   // Computed field errors from form controller
   const errors = computed(() => {
     errorsChangedSignal() // Subscribe to errors changes
     return formController.getErrors()[path] || []
-  }) as ISignal<string[]>
+  }) as IComputed<string[]>
 
   // Computed field validity
-  const isValid = computed(() => errors().length === 0) as ISignal<boolean>
+  const isValid = computed(() => errors().length === 0) as IComputed<boolean>
 
   return {
     path,
@@ -99,23 +99,23 @@ function createFieldState(
 
 export class FormController implements IFormController {
   // Form-level reactive state (public readonly)
-  readonly isSubmitting: Signal<boolean>
-  readonly isValidating: Signal<boolean>
-  readonly isDirty: ISignal<boolean>
-  readonly isTouched: ISignal<boolean>
-  readonly isValid: ISignal<boolean>
+  readonly isSubmitting: ISignal<boolean>
+  readonly isValidating: ISignal<boolean>
+  readonly isDirty: IComputed<boolean>
+  readonly isTouched: IComputed<boolean>
+  readonly isValid: IComputed<boolean>
 
   // Internal state (all private)
   private dataSource: DataSource
   private initialDataSource: DataSource
-  private validator: FormValidator
+  private validator: IFormValidator
   private fieldStates: Map<string, IFieldState> = new Map()
-  private readonly dataChanged: Signal<number>
-  private readonly errorsChanged: Signal<number>
-  private readonly fieldStatesSize: Signal<number>
+  private readonly dataChanged: ISignal<number>
+  private readonly errorsChanged: ISignal<number>
+  private readonly fieldStatesSize: ISignal<number>
   private errors: Record<string, string[]> = {}
 
-  constructor(dataSource: DataSource, validator?: FormValidator) {
+  constructor(dataSource: DataSource, validator?: IFormValidator) {
     this.dataSource = dataSource
     this.initialDataSource = dataSource.clone() // Keep initial state for reset
     this.validator = validator || new NoopValidator()
@@ -135,20 +135,20 @@ export class FormController implements IFormController {
       return Array.from(this.fieldStates.values()).some((field) =>
         field.isDirty()
       )
-    }) as ISignal<boolean>
+    }) as IComputed<boolean>
 
     this.isTouched = computed(() => {
       this.fieldStatesSize() // Subscribe to field states map changes
       return Array.from(this.fieldStates.values()).some((field) =>
         field.isTouched()
       )
-    }) as ISignal<boolean>
+    }) as IComputed<boolean>
 
     // Computed form validity
     this.isValid = computed(() => {
       this.errorsChanged() // Subscribe to errors changes
       return Object.keys(this.errors).length === 0
-    }) as ISignal<boolean>
+    }) as IComputed<boolean>
   }
 
   field(path: string): IFieldState {

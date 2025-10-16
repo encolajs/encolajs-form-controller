@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import useForm, { FormController, PlainObjectDataSource } from '../../../../src/'
+import createForm, { FormController, PlainObjectDataSource } from '../../../../src/'
 import { createEncolaValidatorFromRules } from '../../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import { useFormController } from './useFormController.jsx'
@@ -206,7 +206,7 @@ export default function ReactExample() {
   }, [])
 
   const formController = useMemo(() => {
-    return useForm(dataSource, validator)
+    return createForm(dataSource, validator)
   }, [dataSource, validator])
 
   const { state, methods, controller } = useFormController(formController)

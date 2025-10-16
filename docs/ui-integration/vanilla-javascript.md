@@ -18,7 +18,7 @@ This example demonstrates a complete form implementation using EncolaJS Form Con
 
 ```js [Javascript]
 // Import dependencies (replace with actual CDN URLs or local files)
-import useForm, { FormController, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
+import createForm, { FormController, PlainObjectDataSource, effect /* exported from alien-signals */ } from '@encolajs/form-controller'
 import { createEncolaValidatorFromRules } from '@encolajs/form-controller/encola'
 import { ValidatorFactory } from '@encolajs/validator'
 
@@ -69,7 +69,7 @@ const dataSource = new PlainObjectDataSource({
 })
 
 // initialize the controller
-const form = useForm(dataSource, validator)
+const form = createForm(dataSource, validator)
 
 // Make form globally available for debugging
 window.form = form
@@ -79,7 +79,7 @@ window.form = form
  * This is a reusable function that can be used across different forms
  *
  * @param {HTMLFormElement} formElement - The form element to bind
- * @param {FormController} formController - The form controller instance
+ * @param {IFormController} formController - The form controller instance
  * @param {Object} options - Configuration options
  * @param {Object} options.arrayDefaults - Default items for array fields
  * @param {Function} options.onSubmit - Custom submit handler

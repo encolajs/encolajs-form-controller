@@ -1,14 +1,8 @@
 import { createSignal, createMemo, onCleanup } from 'solid-js'
 import { effect } from 'alien-signals'
+import {FormController} from "../../../../src";
 
-/**
- * Creates array field state using SolidJS signals
- * @param {FormController} formController - The form controller instance
- * @param {string} fieldPath - The path to the array field
- * @param {Object} defaultItem - Default item to add when appending
- * @returns {Object} Array field state and methods
- */
-export function useArrayField(formController, fieldPath, defaultItem = {}) {
+export function useArrayField(formController: FormController, fieldPath: string, defaultItem = {}) {
   const field = formController.field(fieldPath)
   const effects = []
 

@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { FormController } from '../../src/form-controller/FormController'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { FormController, PlainObjectDataSource } from '../../src'
 import { MockFormValidator } from '../mocks/MockFormValidator'
-import useForm from '../../src'
+import createForm from '../../src'
 
 describe('FormController - Repeatable Field Validation', () => {
   let formController: FormController
@@ -22,6 +21,7 @@ describe('FormController - Repeatable Field Validation', () => {
 
     // Configure validator to fail for empty names on any path ending with '.name'
     const originalValidateField = validator.validateField.bind(validator)
+    // @ts-ignore
     const originalValidate = validator.validate.bind(validator)
 
     validator.validateField = async (
@@ -65,7 +65,7 @@ describe('FormController - Repeatable Field Validation', () => {
       return errors
     }
 
-    formController = useForm(dataSource, validator)
+    formController = createForm(dataSource, validator)
   })
 
   it('should clear validation errors when invalid field is removed from repeatable array', async () => {

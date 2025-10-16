@@ -4,7 +4,7 @@ import {
   YupValidatorAdapter,
   useYupValidator,
 } from '../../src/adapters/YupValidatorAdapter'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { PlainObjectDataSource } from '../../src'
 
 describe('YupValidatorAdapter', () => {
   let adapter: YupValidatorAdapter

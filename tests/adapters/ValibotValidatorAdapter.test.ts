@@ -4,7 +4,7 @@ import {
   ValibotValidatorAdapter,
   useValibotValidator,
 } from '../../src/adapters/ValibotValidatorAdapter'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { PlainObjectDataSource } from '../../src'
 
 // Set up global valibot for the adapter to use
 ;(globalThis as any).valibot = v

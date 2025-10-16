@@ -198,7 +198,7 @@ const validator = new EncolaValidatorAdapter(userSchema)
 Now create the form controller using the validator from Step 2:
 
 ```javascript
-import useForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import createForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 
 // Create a data source with initial form data
 const dataSource = new PlainObjectDataSource({
@@ -218,7 +218,7 @@ const dataSource = new PlainObjectDataSource({
 })
 
 // Create the form controller with the validator from Step 2
-const form = useForm(dataSource, validator)
+const form = createForm(dataSource, validator)
 ```
 
 ## Step 4: Build the Form UI

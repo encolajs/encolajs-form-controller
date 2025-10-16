@@ -1,4 +1,4 @@
-import type { FormValidator, DataSource } from '../types'
+import type { IFormValidator, DataSource } from '../types'
 
 /**
  * Tree-shakable Valibot adapter for FormController
@@ -17,7 +17,7 @@ type ValibotIssue = any
  * Valibot Validator Adapter
  * Requires Valibot to be installed as a peer dependency
  */
-export class ValibotValidatorAdapter implements FormValidator {
+export class ValibotValidatorAdapter implements IFormValidator {
   private schema: ValibotSchema | null = null
   private errors: Record<string, string[]> = {}
 

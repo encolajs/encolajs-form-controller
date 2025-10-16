@@ -23,8 +23,7 @@ The `HeadlessForm` component is the root component that creates the FormControll
 ```vue [HeadlessForm.vue]
 <script setup>
 import { provide, reactive, onMounted, onUnmounted } from 'vue'
-import useForm from '@encolajs/form-controller'
-import { effect } from 'alien-signals'
+import createForm, { effect } from '@encolajs/form-controller'
 
 const props = defineProps({
   dataSource: {
@@ -39,7 +38,7 @@ const props = defineProps({
 })
 
 // Create form controller
-const formController = useForm(props.dataSource, props.validator)
+const formController = createForm(props.dataSource, props.validator)
 
 // Reactive form state
 const formState = reactive({

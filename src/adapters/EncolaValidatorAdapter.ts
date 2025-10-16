@@ -1,4 +1,4 @@
-import type { FormValidator, DataSource } from '../types'
+import type { IFormValidator, DataSource } from '../types'
 
 /**
  * Tree-shakable EncolaJS Validator adapter for FormController
@@ -17,7 +17,7 @@ type EncolaValidatorFactory = any
  * EncolaJS Validator Adapter
  * Requires @encolajs/validator to be installed as a peer dependency
  */
-export class EncolaValidatorAdapter implements FormValidator {
+export class EncolaValidatorAdapter implements IFormValidator {
   private validator: EncolaValidator | null = null
   private errors: Record<string, string[]> = {}
 
@@ -27,9 +27,6 @@ export class EncolaValidatorAdapter implements FormValidator {
     }
   }
 
-  /**
-   * Set the EncolaJS validator instance
-   */
   setValidator(validator: EncolaValidator): void {
     this.validator = validator
     this.clearAllErrors()

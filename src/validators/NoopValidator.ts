@@ -1,10 +1,10 @@
-import type { FormValidator, DataSource } from '../types'
+import type { IFormValidator, DataSource } from '../types'
 
 /**
  * No-operation validator that considers all fields and forms to be valid
  * Used as the default validator when no validation is needed
  */
-export class NoopValidator implements FormValidator {
+export class NoopValidator implements IFormValidator {
   async validateField(
     _path: string,
     _dataSource: DataSource

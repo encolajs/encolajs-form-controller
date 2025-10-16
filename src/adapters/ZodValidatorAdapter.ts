@@ -1,4 +1,4 @@
-import type { FormValidator, DataSource } from '../types'
+import type { IFormValidator, DataSource } from '../types'
 
 /**
  * Tree-shakable Zod adapter for FormController
@@ -18,7 +18,7 @@ type ZodIssue = any
  * Zod Validator Adapter
  * Requires Zod to be installed as a peer dependency
  */
-export class ZodValidatorAdapter implements FormValidator {
+export class ZodValidatorAdapter implements IFormValidator {
   private schema: ZodSchema | null = null
   private errors: Record<string, string[]> = {}
 

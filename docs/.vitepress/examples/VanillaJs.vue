@@ -1,5 +1,5 @@
 <script setup>
-import useForm, { FormController, PlainObjectDataSource, effect } from '../../../src/'
+import createForm, { FormController, PlainObjectDataSource, effect } from '../../../src/'
 import { createEncolaValidatorFromRules } from '../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import {onMounted} from "vue";
@@ -54,7 +54,7 @@ const dataSource = new PlainObjectDataSource({
   contacts: []
 })
 
-const form = useForm(dataSource, validator)
+const form = createForm(dataSource, validator)
 
 // Make form globally available for debugging
 window.form = form
@@ -64,7 +64,7 @@ window.form = form
  * This is a reusable function that can be used across different forms
  *
  * @param {HTMLFormElement} formElement - The form element to bind
- * @param {FormController} formController - The form controller instance
+ * @param {IFormController} formController - The form controller instance
  * @param {Object} options - Configuration options
  * @param {Object} options.arrayDefaults - Default items for array fields
  * @param {Function} options.onSubmit - Custom submit handler

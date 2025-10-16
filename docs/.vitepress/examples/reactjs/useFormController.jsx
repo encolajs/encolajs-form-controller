@@ -3,7 +3,7 @@ import { effect } from 'alien-signals'
 
 /**
  * React hook for integrating with FormController
- * @param {FormController} formController - The form controller instance
+ * @param {IFormController} formController - The form controller instance
  * @returns {Object} Form state and methods
  */
 export function useFormController(formController) {

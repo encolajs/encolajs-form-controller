@@ -4,7 +4,7 @@ import {
   ZodValidatorAdapter,
   useZodValidator,
 } from '../../src/adapters/ZodValidatorAdapter'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { PlainObjectDataSource } from '../../src'
 
 describe('ZodValidatorAdapter', () => {
   let adapter: ZodValidatorAdapter
@@ -12,12 +12,12 @@ describe('ZodValidatorAdapter', () => {
 
   const userSchema = z.object({
     name: z.string().min(1, 'Name is required'),
-    email: z.string().email('Invalid email format'),
+    email: z.email('Invalid email format'),
     age: z.number().min(18, 'Must be at least 18'),
     profile: z
       .object({
         bio: z.string().optional(),
-        website: z.string().url('Invalid URL').optional(),
+        website: z.url('Invalid URL').optional(),
       })
       .optional(),
     tags: z.array(z.string()).optional(),
@@ -262,7 +262,7 @@ describe('ZodValidatorAdapter', () => {
         user: z.object({
           name: z.string().min(1, 'Name required'),
           contacts: z.object({
-            email: z.string().email('Invalid email'),
+            email: z.email('Invalid email'),
             phone: z.string().min(10, 'Phone too short'),
           }),
         }),
@@ -296,7 +296,7 @@ describe('ZodValidatorAdapter', () => {
       const complexSchema = z.object({
         user: z.object({
           name: z.string().min(1, 'Name required'),
-          email: z.string().email('Invalid email'),
+          email: z.email('Invalid email'),
         }),
       })
 

@@ -11,7 +11,7 @@ npm install @encolajs/form-controller yup
 ## Basic Setup
 
 ```javascript
-import useForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import createForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 import { YupValidatorAdapter } from '@encolajs/form-controller/yup'
 import * as yup from 'yup'
 
@@ -79,7 +79,7 @@ const dataSource = new PlainObjectDataSource({
   contacts: []
 })
 
-const form = useForm(dataSource, validator)
+const form = createForm(dataSource, validator)
 ```
 
 ## Advanced Yup Features

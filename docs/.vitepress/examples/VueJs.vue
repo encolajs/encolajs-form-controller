@@ -107,7 +107,6 @@ const getInputValue = (event) => {
           <!-- Basic Information -->
           <section>
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
-            {{dataSource.get('name')}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Name Field -->
               <HeadlessInput name="name" v-slot="{ value, errors, hasErrors, handleInput, handleChange }">

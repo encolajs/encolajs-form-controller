@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { FormController } from '../../src/form-controller/FormController'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { FormController, PlainObjectDataSource } from '../../src'
 import { MockFormValidator } from '../mocks/MockFormValidator'
 import { effect } from 'alien-signals'
-import useForm from '../../src'
+import createForm from '../../src'
 
 describe('FormController', () => {
   let formController: FormController
@@ -31,7 +30,7 @@ describe('FormController', () => {
     initialData = createInitialData()
     dataSource = new PlainObjectDataSource(createInitialData()) // Use a separate copy for the data source
     validator = new MockFormValidator()
-    formController = useForm(dataSource, validator)
+    formController = createForm(dataSource, validator)
   })
 
   describe('initialization', () => {
@@ -41,7 +40,7 @@ describe('FormController', () => {
     })
 
     it('should initialize with default validator when none provided', () => {
-      const controller = useForm(dataSource)
+      const controller = createForm(dataSource)
       expect(controller).toBeDefined()
     })
 
@@ -400,16 +399,17 @@ describe('FormController', () => {
       })
 
       it('should shift field states when removing from middle', async () => {
+        // @ts-ignore
         // Add a third item with dirty state first
-        const originalField2Price = formController.field('items.2.price') // Create field state first
+        const originalField2Price = formController.field('items.2.price')
         await formController.setValue('items.2.price', 350, {
           validate: false,
         })
         const newItem = { price: 999, quantity: 9 }
-        formController.arrayAppend('items', newItem)
+        await formController.arrayAppend('items', newItem)
 
         // Remove middle item (index 1)
-        formController.arrayRemove('items', 1)
+        await formController.arrayRemove('items', 1)
 
         // Original items.0 should remain unchanged
         const field0Price = formController.field('items.0.price')
@@ -472,8 +472,8 @@ describe('FormController', () => {
         // Add more items and states
         const newItem1 = { price: 300, quantity: 3 }
         const newItem2 = { price: 400, quantity: 4 }
-        formController.arrayAppend('items', newItem1)
-        formController.arrayAppend('items', newItem2)
+        await formController.arrayAppend('items', newItem1)
+        await formController.arrayAppend('items', newItem2)
 
         // Create field states first, then set values
         formController.field('items.2.price')
@@ -486,7 +486,7 @@ describe('FormController', () => {
         })
 
         // Move item from index 0 to index 3 (drag & drop behavior)
-        formController.arrayMove('items', 0, 3)
+        await formController.arrayMove('items', 0, 3)
 
         // Original items.0 should now be at items.3
         const field3Price = formController.field('items.3.price')
@@ -609,6 +609,8 @@ describe('FormController', () => {
 
       await formController.setValue('name', 'Jane')
 
+      expect(field1.value()).toBe('Jane')
+      expect(field1.isDirty()).toBe(true)
       expect(field2.value()).toBe('Jane')
       expect(field2.isDirty()).toBe(true)
     })
@@ -635,10 +637,10 @@ describe('FormController', () => {
       const nameField = formController.field('name')
 
       const promises = [
-        formController.setValue('name', 'Jane'),
-        formController.setValue('name', 'Bob'),
-        formController.validateField('name'),
-        formController.validate(),
+        await formController.setValue('name', 'Jane'),
+        await formController.setValue('name', 'Bob'),
+        await formController.validateField('name'),
+        await formController.validate(),
       ]
 
       await Promise.all(promises)
@@ -1123,6 +1125,7 @@ describe('FormController', () => {
       expect(addressCityChanges).toEqual([0])
 
       // Trigger change on parent (simulating array reorder or object replacement)
+      // @ts-ignore
       formController.triggerValueChanged('address')
 
       // Parent and ALL children should change

@@ -1,5 +1,5 @@
 <script setup>
-import useForm, { FormController, PlainObjectDataSource, effect } from '../../../src/'
+import createForm, { FormController, PlainObjectDataSource, effect } from '../../../src/'
 import { createEncolaValidatorFromRules } from '../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import {onMounted} from 'vue'
@@ -29,7 +29,7 @@ onMounted(async () => {
     // Create validator and form controller immediately
     const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
     const dataSource = new PlainObjectDataSource(values)
-    const formController = useForm(dataSource, validator)
+    const formController = createForm(dataSource, validator)
 
     // Make form controller globally available for debugging
     if (typeof window !== 'undefined') {

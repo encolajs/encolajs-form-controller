@@ -5,7 +5,7 @@ import {
   useEncolaValidator,
   createEncolaValidatorFromRules,
 } from '../../src/adapters/EncolaValidatorAdapter'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { PlainObjectDataSource } from '../../src'
 
 describe('EncolaValidatorAdapter', () => {
   let adapter: EncolaValidatorAdapter

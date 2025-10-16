@@ -1,5 +1,5 @@
 // Main exports for @encolajs/form-controller
-import type { DataSource, FormValidator } from '@/types.ts'
+import type { DataSource, IFormValidator } from '@/types.ts'
 import { FormController } from './form-controller'
 
 export * from './types'
@@ -10,9 +10,9 @@ export * from './validators'
 // Re-export alien-signals for convenience
 export { signal, computed, effect } from 'alien-signals'
 
-export default function useForm(
+export default function createForm(
   dataSource: DataSource,
-  validator?: FormValidator
+  validator?: IFormValidator
 ): FormController {
   return new FormController(dataSource, validator)
 }

@@ -3,7 +3,7 @@ import { effect } from 'alien-signals'
 
 /**
  * React hook for managing array form fields
- * @param {FormController} formController - The form controller instance
+ * @param {IFormController} formController - The form controller instance
  * @param {string} fieldPath - The path to the array field
  * @param {Object} defaultItem - Default item to add when appending
  * @returns {Object} Array field state and methods

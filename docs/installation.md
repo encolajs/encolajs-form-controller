@@ -87,14 +87,14 @@ For quick prototyping or simple projects, you can use the CDN version:
 To verify your installation, create a simple form controller:
 
 ```javascript
-import useForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import createForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 
 const dataSource = new PlainObjectDataSource({
   name: '',
   email: ''
 })
 
-const form = useForm(dataSource)
+const form = createForm(dataSource)
 
 console.log('Installation successful!', form.getValues())
 ```

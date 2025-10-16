@@ -1,6 +1,6 @@
 <script setup>
 import { provide, reactive, onMounted, onUnmounted } from 'vue'
-import useForm, { FormController } from '../../../../src/'
+import createForm, { FormController } from '../../../../src/'
 import { effect } from 'alien-signals'
 
 const props = defineProps({
@@ -16,7 +16,7 @@ const props = defineProps({
 })
 
 // Create form controller
-const formController = useForm(props.dataSource, props.validator)
+const formController = createForm(props.dataSource, props.validator)
 
 // Reactive form state
 const formState = reactive({

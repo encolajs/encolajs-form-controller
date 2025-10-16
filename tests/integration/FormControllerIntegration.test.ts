@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { FormController } from '../../src/form-controller/FormController'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { FormController, PlainObjectDataSource } from '../../src'
 import { MockFormValidator } from '../mocks/MockFormValidator'
 import { effect } from 'alien-signals'
-import useForm from '../../src'
+import createForm from '../../src'
 
 describe('FormController Integration', () => {
   let formController: FormController
@@ -51,7 +50,7 @@ describe('FormController Integration', () => {
     initialData = createInitialData()
     dataSource = new PlainObjectDataSource(createInitialData()) // Use a separate copy for the data source
     validator = new MockFormValidator()
-    formController = useForm(dataSource, validator)
+    formController = createForm(dataSource, validator)
   })
 
   describe('real-world form scenarios', () => {
@@ -59,6 +58,7 @@ describe('FormController Integration', () => {
       // Get field controllers
       const nameField = formController.field('user.name')
       const emailField = formController.field('user.email')
+      // @ts-ignore
       const bioField = formController.field('user.profile.bio')
 
       // Track form state changes
@@ -121,7 +121,7 @@ describe('FormController Integration', () => {
         price: 300,
         tags: ['electronics', 'gaming'],
       }
-      formController.arrayAppend('products', newProduct)
+      await formController.arrayAppend('products', newProduct)
 
       expect(dataSource.get('products')).toHaveLength(3)
       expect(formController.field('products.2.name').value()).toBe('Product 3')
@@ -156,6 +156,7 @@ describe('FormController Integration', () => {
       expect(dataSource.get('settings.preferences')).toContain('compact-view')
 
       // Update nested notification setting
+      // @ts-ignore
       const pushNotifField = formController.field('settings.notifications.push')
       await formController.setValue('settings.notifications.push', false)
 
@@ -335,6 +336,7 @@ describe('FormController Integration', () => {
       expect(deepField.value()).toBe('#007bff')
 
       // Update another deep field
+      // @ts-ignore
       const secondaryField = formController.field(
         'user.profile.settings.theme.colors.secondary'
       )
@@ -431,6 +433,7 @@ describe('FormController Integration', () => {
       const circularController = new FormController(circularDataSource)
 
       expect(() => {
+        // @ts-ignore
         const field = circularController.field('name')
         circularController.setValue('name', 'updated')
       }).not.toThrow()
@@ -467,18 +470,19 @@ describe('FormController Integration', () => {
       }
 
       const largeDataSource = new PlainObjectDataSource(largeData)
-      const largeController = useForm(largeDataSource, validator)
+      const largeController = createForm(largeDataSource, validator)
 
       const startTime = Date.now()
 
       // Perform operations on large dataset
       await largeController.setValue('items.500.name', 'Updated Item 500')
       await largeController.validate()
-      largeController.arrayAppend(
-        'items',
-        { id: 1000, name: 'New Item', value: 500, tags: [] },
-        501
-      )
+      largeController.arrayAppend('items', {
+        id: 1000,
+        name: 'New Item',
+        value: 500,
+        tags: [],
+      })
       largeController.arrayMove('items', 999, 3)
 
       const endTime = Date.now()
@@ -491,9 +495,11 @@ describe('FormController Integration', () => {
     })
 
     it('should properly cleanup resources', () => {
+      // @ts-ignore
       const field = formController.field('user.name')
 
       // Create many field references
+      // @ts-ignore
       const fields = Array.from({ length: 100 }, () =>
         formController.field(`test.${Math.random()}`)
       )

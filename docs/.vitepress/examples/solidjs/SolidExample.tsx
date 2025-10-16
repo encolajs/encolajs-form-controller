@@ -1,4 +1,4 @@
-import useForm, { FormController, PlainObjectDataSource } from '../../../../src/'
+import createForm, { FormController, PlainObjectDataSource } from '../../../../src/'
 import { createEncolaValidatorFromRules } from '../../../../encola'
 import { ValidatorFactory } from '@encolajs/validator'
 import { useFormController } from './useFormController'
@@ -211,7 +211,7 @@ export default function SolidExample() {
   // Create data source and validator
   const dataSource = new PlainObjectDataSource(initialValues)
   const validator = createEncolaValidatorFromRules(validatorFactory, rules, messages)
-  const formController = useForm(dataSource, validator)
+  const formController = createForm(dataSource, validator)
 
   // Create form state
   const form = useFormController(formController)

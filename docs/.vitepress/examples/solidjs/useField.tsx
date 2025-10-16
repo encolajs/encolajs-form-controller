@@ -1,13 +1,8 @@
 import { createSignal, onCleanup } from 'solid-js'
 import { effect } from 'alien-signals'
+import {FormController} from "../../../../src";
 
-/**
- * Creates field state using SolidJS signals
- * @param {FormController} formController - The form controller instance
- * @param {string} fieldPath - The path to the field
- * @returns {Object} Field state and handlers
- */
-export function useField(formController, fieldPath) {
+export function useField(formController: FormController, fieldPath: string) {
   // Create reactive signals
   const [value, setValue] = createSignal(formController.getValue(fieldPath))
   const [errors, setErrors] = createSignal(formController.getErrors()[fieldPath] || [])

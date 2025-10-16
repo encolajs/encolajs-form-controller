@@ -5,7 +5,7 @@
 ```typescript
 new FormController(dataSource: DataSource, validator?: FormValidator)
 // alternatively
-useForm(dataSource: DataSource, validator?: FormValidator)
+createForm(dataSource: DataSource, validator?: FormValidator)
 ```
 
 Creates a new FormController instance with the provided data source and optional validator.
@@ -16,11 +16,11 @@ Creates a new FormController instance with the provided data source and optional
 
 **Example:**
 ```javascript
-import { useForm, FormController, PlainObjectDataSource } from '@encolajs/form-controller'
+import createForm, { FormController, PlainObjectDataSource } from '@encolajs/form-controller'
 import useZodValidator from '@encolajs/form-controller/zod'
 
 const dataSource = new PlainObjectDataSource({ name: '', email: '' })
-const form = useForm(dataSource, useZodValidator(schema))
+const form = createForm(dataSource, useZodValidator(schema))
 ```
 
 ## Reactive Properties

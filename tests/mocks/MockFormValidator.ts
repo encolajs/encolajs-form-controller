@@ -1,10 +1,11 @@
-import type { FormValidator, DataSource } from '../../src/types'
+import type { IFormValidator, DataSource } from '../../src'
 
-export class MockFormValidator implements FormValidator {
+export class MockFormValidator implements IFormValidator {
   private fieldErrors: Record<string, string[]> = {}
   private formErrors: Record<string, string[]> = {}
   private asyncDelays: Record<string, number> = {}
 
+  // @ts-ignore
   async validateField(path: string, dataSource: DataSource): Promise<string[]> {
     const delay = this.asyncDelays[path] || 0
 
@@ -16,6 +17,7 @@ export class MockFormValidator implements FormValidator {
     return this.fieldErrors[path] || []
   }
 
+  // @ts-ignore
   async validate(dataSource: DataSource): Promise<Record<string, string[]>> {
     const maxDelay = Math.max(...Object.values(this.asyncDelays))
 
@@ -43,6 +45,7 @@ export class MockFormValidator implements FormValidator {
     return Object.keys(this.fieldErrors).length === 0
   }
 
+  // @ts-ignore
   getDependentFields(path: string): string[] {
     // Mock implementation - could be enhanced for testing dependent validations
     return []

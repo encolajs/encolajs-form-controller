@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { PlainObjectDataSource } from '../../src/data-sources/PlainObjectDataSource'
+import { PlainObjectDataSource } from '../../src'
 
 describe('PlainObjectDataSource', () => {
   let dataSource: PlainObjectDataSource
@@ -97,6 +97,7 @@ describe('PlainObjectDataSource', () => {
 
     it('should extend arrays when setting beyond current length', () => {
       dataSource.set('items.5.price', 300)
+      // @ts-ignore
       expect(dataSource.get('items').length).toBe(6)
       expect(dataSource.get('items.5.price')).toBe(300)
     })
@@ -146,6 +147,7 @@ describe('PlainObjectDataSource', () => {
 
     it('should remove array items', () => {
       dataSource.remove('items.0')
+      // @ts-ignore
       expect(dataSource.get('items').length).toBe(2) // Array length unchanged (sparse array)
       expect(dataSource.get('items.0')).toBeUndefined() // First item removed
       expect(dataSource.get('items.1.price')).toBe(200) // Second item still at index 1
@@ -161,6 +163,7 @@ describe('PlainObjectDataSource', () => {
     describe('arrayAppend', () => {
       it('should add items to existing arrays', () => {
         dataSource.arrayAppend('items', { price: 300, quantity: 3 })
+        // @ts-ignore
         expect(dataSource.get('items').length).toBe(3)
         expect(dataSource.get('items.2.price')).toBe(300)
       })
@@ -179,6 +182,7 @@ describe('PlainObjectDataSource', () => {
     describe('arrayInsert', () => {
       it('should insert items at specific index', () => {
         dataSource.arrayInsert('items', 1, { price: 150, quantity: 1.5 })
+        // @ts-ignore
         expect(dataSource.get('items').length).toBe(3)
         expect(dataSource.get('items.1.price')).toBe(150)
         expect(dataSource.get('items.2.price')).toBe(200) // Original item shifted
@@ -192,6 +196,7 @@ describe('PlainObjectDataSource', () => {
 
       it('should append when index is greater than array length', () => {
         dataSource.arrayInsert('items', 10, { price: 400, quantity: 4 })
+        // @ts-ignore
         expect(dataSource.get('items').length).toBe(3)
         expect(dataSource.get('items.2.price')).toBe(400)
       })
@@ -210,17 +215,20 @@ describe('PlainObjectDataSource', () => {
     describe('arrayRemove', () => {
       it('should remove items at specific index', () => {
         dataSource.arrayRemove('items', 0)
+        // @ts-ignore
         expect(dataSource.get('items').length).toBe(1)
         expect(dataSource.get('items.0.price')).toBe(200) // Second item becomes first
       })
 
       it('should handle index out of bounds gracefully', () => {
         expect(() => dataSource.arrayRemove('items', 10)).not.toThrow()
+        // @ts-ignore
         expect(dataSource.get('items').length).toBe(2) // Array unchanged
       })
 
       it('should handle negative index gracefully', () => {
         expect(() => dataSource.arrayRemove('items', -1)).not.toThrow()
+        // @ts-ignore
         expect(dataSource.get('items').length).toBe(2) // Array unchanged
       })
 

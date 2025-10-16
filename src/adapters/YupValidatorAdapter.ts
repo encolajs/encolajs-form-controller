@@ -1,4 +1,4 @@
-import type { FormValidator, DataSource } from '../types'
+import type { IFormValidator, DataSource } from '../types'
 
 /**
  * Tree-shakable Yup adapter for FormController
@@ -17,7 +17,7 @@ type YupValidationError = any
  * Yup Validator Adapter
  * Requires Yup to be installed as a peer dependency
  */
-export class YupValidatorAdapter implements FormValidator {
+export class YupValidatorAdapter implements IFormValidator {
   private schema: YupSchema | null = null
   private errors: Record<string, string[]> = {}
 

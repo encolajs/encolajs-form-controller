@@ -2,7 +2,7 @@ import { effect } from 'alien-signals'
 
 /**
  * Creates field state using Svelte 5 runes
- * @param {FormController} formController - The form controller instance
+ * @param {IFormController} formController - The form controller instance
  * @param {string} fieldPath - The path to the field
  * @returns {Object} Field state and handlers
  */

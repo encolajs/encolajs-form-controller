@@ -2,7 +2,7 @@ import { effect } from 'alien-signals'
 
 /**
  * Creates form controller state using Svelte 5 runes
- * @param {FormController} formController - The form controller instance
+ * @param {IFormController} formController - The form controller instance
  * @returns {Object} Form state and methods
  */
 export function useFormController(formController) {

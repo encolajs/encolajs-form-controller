@@ -2,9 +2,9 @@ import type { signal, computed } from 'alien-signals'
 
 // Extract types from alien-signals functions
 // signal() returns a function that both gets and sets values
-export type Signal<T> = ReturnType<typeof signal<T>>
+export type ISignal<T> = ReturnType<typeof signal<T>>
 // computed() returns a function that only gets values
-export type ISignal<T> = ReturnType<typeof computed<T>>
+export type IComputed<T> = ReturnType<typeof computed<T>>
 
 /**
  * Options for setting field values
@@ -60,7 +60,7 @@ export interface DataSource {
 /**
  * Form validator interface for pluggable validation systems
  */
-export interface FormValidator {
+export interface IFormValidator {
   /** Validate a specific field */
   validateField(path: string, dataSource: DataSource): Promise<string[]>
 
@@ -103,25 +103,25 @@ export interface IFieldState {
   readonly path: string
 
   /** Reactive field value (computed from DataSource) */
-  readonly value: ISignal<unknown>
+  readonly value: IComputed<unknown>
 
   /** Whether field has been modified */
-  readonly isDirty: Signal<boolean>
+  readonly isDirty: ISignal<boolean>
 
   /** Whether field has been interacted with */
-  readonly isTouched: Signal<boolean>
+  readonly isTouched: ISignal<boolean>
 
   /** Whether field is currently being validated */
-  readonly isValidating: Signal<boolean>
+  readonly isValidating: ISignal<boolean>
 
   /** Whether field has been validated at least once */
-  readonly wasValidated: Signal<boolean>
+  readonly wasValidated: ISignal<boolean>
 
   /** Whether field is valid */
-  readonly isValid: ISignal<boolean>
+  readonly isValid: IComputed<boolean>
 
   /** Current field validation errors */
-  readonly errors: ISignal<string[]>
+  readonly errors: IComputed<string[]>
 
   /**
    * Subscribe to value changes for this field
@@ -141,19 +141,19 @@ export interface IFieldState {
  */
 export interface IFormController {
   /** Whether form is currently being submitted */
-  readonly isSubmitting: Signal<boolean>
+  readonly isSubmitting: ISignal<boolean>
 
   /** Whether form is currently being validated */
-  readonly isValidating: Signal<boolean>
+  readonly isValidating: ISignal<boolean>
 
   /** Whether any field has been modified */
-  readonly isDirty: ISignal<boolean>
+  readonly isDirty: IComputed<boolean>
 
   /** Whether any field has been interacted with */
-  readonly isTouched: ISignal<boolean>
+  readonly isTouched: IComputed<boolean>
 
   /** Whether entire form is valid */
-  readonly isValid: ISignal<boolean>
+  readonly isValid: IComputed<boolean>
 
   /** Get field state for specific path */
   field(path: string): IFieldState
